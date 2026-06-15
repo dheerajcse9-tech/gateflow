@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gp-navy: #0D1B2E;
+  --gp-navy-2: #142236;
+  --gp-gold: #F5A623;
+  --gp-muted: #A0AEC0;
+  --gp-border: #1E3250;
+  --gp-teal: #14B8A6;
+  --gp-green: #22C55E;
+  --gp-amber: #F59E0B;
+  --gp-red: #EF4444;
+  --gp-xp: #EAB308;
+}
+
+body {
+  margin: 0;
+  background: #F7F8FA;
+  color: #0D1B2E;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-serif-display { font-family: var(--font-playfair), Georgia, serif; }
+.font-mono-digits { font-family: var(--font-mono), monospace; }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 60s linear infinite;
+  white-space: nowrap;
+  display: inline-flex;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.9); }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 217 70% 12%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 70% 12%;
+    --radius: 0.5rem;
+  }
+}
+
+.heatmap-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  background: #E5E7EB;
+}
+.heatmap-l1 { background: #99F6E4; }
+.heatmap-l2 { background: #5EEAD4; }
+.heatmap-l3 { background: #14B8A6; }
+.heatmap-l4 { background: #0F766E; }
+.heatmap-today { box-shadow: 0 0 0 2px #F5A623; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
