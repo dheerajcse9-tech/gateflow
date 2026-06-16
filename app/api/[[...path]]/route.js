@@ -6,14 +6,20 @@ import { BRANCHES, CS_SUBJECTS, getAllCSTopics, TOTAL_CS_TOPICS, TARGET_DATES } 
 
 let client
 let db
+let connecting
 
 async function connectToMongo() {
-  if (!client) {
-    client = new MongoClient(process.env.MONGO_URL)
-    await client.connect()
-    db = client.db(process.env.DB_NAME || 'gateplus')
+  if (db) return db
+  if (!connecting) {
+    connecting = (async () => {
+      const c = new MongoClient(process.env.MONGO_URL)
+      await c.connect()
+      client = c
+      db = c.db(process.env.DB_NAME || 'gateplus')
+      return db
+    })()
   }
-  return db
+  return connecting
 }
 
 function handleCORS(response) {
@@ -59,6 +65,109 @@ function sanitizeUser(user) {
   if (!user) return null
   const { _id, passwordHash, passwordSalt, ...rest } = user
   return rest
+}
+
+// ===== Security helpers =====
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'gp-sunrise-admin-secret-change-me-2026'
+const USER_SECRET = process.env.USER_SECRET || 'gp-sunrise-user-secret-change-me-2026'
+
+function base64url(buf) {
+  return Buffer.from(buf).toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+}
+function b64uDecode(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/')
+  while (s.length % 4) s += '='
+  return Buffer.from(s, 'base64').toString()
+}
+function signToken(payload, secret, ttlSec = 60 * 60 * 8) {
+  const body = { ...payload, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + ttlSec }
+  const enc = base64url(JSON.stringify(body))
+  const sig = base64url(crypto.createHmac('sha256', secret).update(enc).digest())
+  return `${enc}.${sig}`
+}
+function verifyToken(token, secret) {
+  if (!token || typeof token !== 'string' || !token.includes('.')) return null
+  const [enc, sig] = token.split('.')
+  const expected = base64url(crypto.createHmac('sha256', secret).update(enc).digest())
+  if (sig !== expected) return null
+  try {
+    const payload = JSON.parse(b64uDecode(enc))
+    if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) return null
+    return payload
+  } catch { return null }
+}
+function getBearer(request) {
+  const h = request.headers.get('authorization') || ''
+  if (h.startsWith('Bearer ')) return h.slice(7)
+  return null
+}
+
+function sanitizeString(s, maxLen = 2000) {
+  if (typeof s !== 'string') return ''
+  return s.slice(0, maxLen)
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<\/?(iframe|object|embed|link|meta)[^>]*>/gi, '')
+    .replace(/on\w+\s*=\s*"[^"]*"/gi, '')
+    .replace(/on\w+\s*=\s*'[^']*'/gi, '')
+    .replace(/javascript:/gi, '')
+}
+function isValidEmail(e) { return typeof e === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) && e.length <= 254 }
+function passwordStrength(p) {
+  if (typeof p !== 'string' || p.length < 6 || p.length > 200) return 'Password must be 6-200 characters'
+  return null
+}
+
+// ===== Rate limiting (in-memory, per-process) =====
+const rateBuckets = new Map()
+function rateLimit(key, limit = 10, windowMs = 60000) {
+  const now = Date.now()
+  const arr = (rateBuckets.get(key) || []).filter((t) => now - t < windowMs)
+  arr.push(now)
+  rateBuckets.set(key, arr)
+  // GC occasionally
+  if (rateBuckets.size > 5000) {
+    for (const [k, v] of rateBuckets) {
+      if (!v.length || now - v[v.length - 1] > windowMs) rateBuckets.delete(k)
+    }
+  }
+  return arr.length <= limit
+}
+function clientKey(request, suffix = '') {
+  const fwd = request.headers.get('x-forwarded-for') || ''
+  const ip = fwd.split(',')[0].trim() || 'anon'
+  return `${ip}:${suffix}`
+}
+
+async function ensureSeedAdmin(db) {
+  const cnt = await db.collection('admins').countDocuments()
+  if (cnt === 0) {
+    const { salt, hash } = hashPassword('admin123')
+    await db.collection('admins').insertOne({
+      id: uuidv4(),
+      email: 'admin@gateplus.local',
+      name: 'Root Admin',
+      role: 'superadmin',
+      passwordSalt: salt,
+      passwordHash: hash,
+      createdAt: new Date().toISOString(),
+    })
+  }
+}
+
+async function requireAdmin(request, db) {
+  const token = getBearer(request)
+  const payload = verifyToken(token, ADMIN_SECRET)
+  if (!payload || !payload.adminId) return null
+  const admin = await db.collection('admins').findOne({ id: payload.adminId })
+  if (!admin) return null
+  const { passwordHash, passwordSalt, _id, ...rest } = admin
+  return rest
+}
+
+async function logAudit(db, adminId, action, target = null, meta = null) {
+  await db.collection('audit_logs').insertOne({
+    id: uuidv4(), adminId, action, target, meta, createdAt: new Date().toISOString(),
+  })
 }
 
 async function emitActivity(db, user, branchCode, action, subject, topic, xpEarned) {
@@ -126,12 +235,17 @@ async function handleRoute(request, { params }) {
 
     // ============ AUTH ============
     if (route === '/auth/signup' && method === 'POST') {
-      const body = await request.json()
-      const { email, password, branchCode = 'CS', targetYear = 2027 } = body
-      if (!email || !password) {
-        return handleCORS(NextResponse.json({ error: 'Email and password required' }, { status: 400 }))
+      if (!rateLimit(clientKey(request, 'signup'), 5, 60000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many requests. Please wait a moment.' }, { status: 429 }))
       }
-      const existing = await db.collection('users').findOne({ email: email.toLowerCase() })
+      const body = await request.json().catch(() => ({}))
+      const email = (body.email || '').toLowerCase().trim()
+      const password = body.password || ''
+      const branchCode = ['CS','DA','ECE','EE','ME','CE'].includes(body.branchCode) ? body.branchCode : 'CS'
+      const targetYear = [2026, 2027, 2028].includes(Number(body.targetYear)) ? Number(body.targetYear) : 2027
+      if (!isValidEmail(email)) return handleCORS(NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 }))
+      const pe = passwordStrength(password); if (pe) return handleCORS(NextResponse.json({ error: pe }, { status: 400 }))
+      const existing = await db.collection('users').findOne({ email })
       if (existing) {
         return handleCORS(NextResponse.json({ error: 'An account with this email already exists. Sign In instead.' }, { status: 409 }))
       }
@@ -139,40 +253,59 @@ async function handleRoute(request, { params }) {
       const username = genUsername(email, branchCode)
       const user = {
         id: uuidv4(),
-        email: email.toLowerCase(),
+        email,
         username,
         passwordSalt: salt,
         passwordHash: hash,
         createdAt: new Date().toISOString(),
         dailyGoalMinutes: 360,
         totalActiveDays: 0,
+        suspended: false,
+        loginAttempts: 0,
+        lockUntil: null,
         branches: [
           {
             branchCode,
-            targetYear: Number(targetYear),
-            xp: 0,
-            level: 1,
-            streak: 0,
-            maxStreak: 0,
+            targetYear,
+            xp: 0, level: 1, streak: 0, maxStreak: 0,
             lastActiveDate: null,
-            completedTopics: [],
-            revisedTopics: [],
+            completedTopics: [], revisedTopics: [],
             isActive: true,
           },
         ],
       }
       await db.collection('users').insertOne(user)
-      return handleCORS(NextResponse.json({ user: sanitizeUser(user) }))
+      const token = signToken({ userId: user.id }, USER_SECRET, 60 * 60 * 24 * 7)
+      return handleCORS(NextResponse.json({ user: sanitizeUser(user), token }))
     }
 
     if (route === '/auth/login' && method === 'POST') {
-      const body = await request.json()
-      const { email, password } = body
-      const user = await db.collection('users').findOne({ email: (email || '').toLowerCase() })
-      if (!user || !verifyPassword(password, user.passwordSalt, user.passwordHash)) {
+      if (!rateLimit(clientKey(request, 'login'), 8, 60000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many attempts. Please wait a minute.' }, { status: 429 }))
+      }
+      const body = await request.json().catch(() => ({}))
+      const email = (body.email || '').toLowerCase().trim()
+      const password = body.password || ''
+      if (!isValidEmail(email)) return handleCORS(NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 }))
+      const user = await db.collection('users').findOne({ email })
+      if (!user) return handleCORS(NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 }))
+      if (user.suspended) return handleCORS(NextResponse.json({ error: 'Your account has been suspended. Contact support.' }, { status: 403 }))
+      if (user.lockUntil && new Date(user.lockUntil) > new Date()) {
+        return handleCORS(NextResponse.json({ error: 'Account temporarily locked due to repeated failures. Try again later.' }, { status: 423 }))
+      }
+      if (!verifyPassword(password, user.passwordSalt, user.passwordHash)) {
+        const attempts = (user.loginAttempts || 0) + 1
+        const update = { $set: { loginAttempts: attempts } }
+        if (attempts >= 5) {
+          update.$set.lockUntil = new Date(Date.now() + 15 * 60000).toISOString()
+          update.$set.loginAttempts = 0
+        }
+        await db.collection('users').updateOne({ id: user.id }, update)
         return handleCORS(NextResponse.json({ error: 'Invalid email or password.' }, { status: 401 }))
       }
-      return handleCORS(NextResponse.json({ user: sanitizeUser(user) }))
+      await db.collection('users').updateOne({ id: user.id }, { $set: { loginAttempts: 0, lockUntil: null, lastLogin: new Date().toISOString() } })
+      const token = signToken({ userId: user.id }, USER_SECRET, 60 * 60 * 24 * 7)
+      return handleCORS(NextResponse.json({ user: sanitizeUser(user), token }))
     }
 
     // ============ USER ============
@@ -478,6 +611,248 @@ async function handleRoute(request, { params }) {
       })
       board.sort((a, b) => b.xp - a.xp || b.completed - a.completed)
       return handleCORS(NextResponse.json({ leaderboard: board.slice(0, 100) }))
+    }
+
+    // ============ ADMIN AUTH ============
+    if (route === '/admin/login' && method === 'POST') {
+      if (!rateLimit(clientKey(request, 'admin-login'), 5, 60000)) {
+        return handleCORS(NextResponse.json({ error: 'Too many attempts.' }, { status: 429 }))
+      }
+      await ensureSeedAdmin(db)
+      const body = await request.json().catch(() => ({}))
+      const email = (body.email || '').toLowerCase().trim()
+      const password = body.password || ''
+      const admin = await db.collection('admins').findOne({ email })
+      if (!admin || !verifyPassword(password, admin.passwordSalt, admin.passwordHash)) {
+        return handleCORS(NextResponse.json({ error: 'Invalid admin credentials.' }, { status: 401 }))
+      }
+      await db.collection('admins').updateOne({ id: admin.id }, { $set: { lastLogin: new Date().toISOString() } })
+      const token = signToken({ adminId: admin.id, role: admin.role }, ADMIN_SECRET, 60 * 60 * 8)
+      await logAudit(db, admin.id, 'admin.login')
+      const { passwordHash, passwordSalt, _id, ...safe } = admin
+      return handleCORS(NextResponse.json({ admin: safe, token }))
+    }
+
+    if (route === '/admin/me' && method === 'GET') {
+      const admin = await requireAdmin(request, db)
+      if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      return handleCORS(NextResponse.json({ admin }))
+    }
+
+    if (route === '/admin/password' && method === 'PATCH') {
+      const admin = await requireAdmin(request, db)
+      if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const body = await request.json().catch(() => ({}))
+      const pe = passwordStrength(body.newPassword); if (pe) return handleCORS(NextResponse.json({ error: pe }, { status: 400 }))
+      const { salt, hash } = hashPassword(body.newPassword)
+      await db.collection('admins').updateOne({ id: admin.id }, { $set: { passwordSalt: salt, passwordHash: hash, passwordChangedAt: new Date().toISOString() } })
+      await logAudit(db, admin.id, 'admin.password_change')
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+
+    // ============ ADMIN: USERS ============
+    if (route === '/admin/users' && method === 'GET') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const q = url.searchParams.get('q') || ''
+      const filter = q ? { $or: [{ email: { $regex: q, $options: 'i' } }, { username: { $regex: q, $options: 'i' } }] } : {}
+      const users = await db.collection('users').find(filter, { projection: { passwordHash: 0, passwordSalt: 0 } }).sort({ createdAt: -1 }).limit(200).toArray()
+      return handleCORS(NextResponse.json({ users: users.map(({ _id, ...r }) => r) }))
+    }
+
+    if (route.match(/^\/admin\/users\/[^/]+\/suspend$/) && method === 'POST') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const userId = route.split('/')[3]
+      const body = await request.json().catch(() => ({}))
+      await db.collection('users').updateOne({ id: userId }, { $set: { suspended: !!body.suspended } })
+      await logAudit(db, admin.id, body.suspended ? 'user.suspend' : 'user.reactivate', userId)
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+
+    // ============ ADMIN: YOUTUBE ============
+    if (route === '/admin/youtube' && method === 'GET') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const list = await db.collection('youtube_videos').find({}).sort({ pinned: -1, createdAt: -1 }).toArray()
+      return handleCORS(NextResponse.json({ videos: list.map(({ _id, ...r }) => r) }))
+    }
+    if (route === '/admin/youtube' && method === 'POST') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const body = await request.json().catch(() => ({}))
+      const item = {
+        id: uuidv4(),
+        title: sanitizeString(body.title, 200),
+        url: sanitizeString(body.url, 500),
+        category: sanitizeString(body.category, 50) || 'General',
+        branchCode: sanitizeString(body.branchCode, 4) || 'CS',
+        featured: !!body.featured,
+        pinned: !!body.pinned,
+        createdAt: new Date().toISOString(),
+      }
+      await db.collection('youtube_videos').insertOne(item)
+      await logAudit(db, admin.id, 'youtube.create', item.id)
+      return handleCORS(NextResponse.json({ video: item }))
+    }
+    if (route.match(/^\/admin\/youtube\/[^/]+$/) && method === 'PATCH') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const id = route.split('/')[3]
+      const body = await request.json().catch(() => ({}))
+      const upd = {}
+      if (body.title !== undefined) upd.title = sanitizeString(body.title, 200)
+      if (body.url !== undefined) upd.url = sanitizeString(body.url, 500)
+      if (body.category !== undefined) upd.category = sanitizeString(body.category, 50)
+      if (body.branchCode !== undefined) upd.branchCode = sanitizeString(body.branchCode, 4)
+      if (body.featured !== undefined) upd.featured = !!body.featured
+      if (body.pinned !== undefined) upd.pinned = !!body.pinned
+      await db.collection('youtube_videos').updateOne({ id }, { $set: upd })
+      await logAudit(db, admin.id, 'youtube.update', id, upd)
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+    if (route.match(/^\/admin\/youtube\/[^/]+$/) && method === 'DELETE') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const id = route.split('/')[3]
+      await db.collection('youtube_videos').deleteOne({ id })
+      await logAudit(db, admin.id, 'youtube.delete', id)
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+
+    // ============ ADMIN: QUOTES ============
+    if (route === '/admin/quotes' && method === 'GET') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const list = await db.collection('quotes').find({}).sort({ featured: -1, createdAt: -1 }).toArray()
+      return handleCORS(NextResponse.json({ quotes: list.map(({ _id, ...r }) => r) }))
+    }
+    if (route === '/admin/quotes' && method === 'POST') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const body = await request.json().catch(() => ({}))
+      const item = {
+        id: uuidv4(),
+        text: sanitizeString(body.text, 500),
+        author: sanitizeString(body.author, 100) || 'Anonymous',
+        featured: !!body.featured,
+        active: body.active !== false,
+        createdAt: new Date().toISOString(),
+      }
+      if (!item.text) return handleCORS(NextResponse.json({ error: 'Quote text required' }, { status: 400 }))
+      await db.collection('quotes').insertOne(item)
+      await logAudit(db, admin.id, 'quote.create', item.id)
+      return handleCORS(NextResponse.json({ quote: item }))
+    }
+    if (route.match(/^\/admin\/quotes\/[^/]+$/) && method === 'PATCH') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const id = route.split('/')[3]
+      const body = await request.json().catch(() => ({}))
+      const upd = {}
+      if (body.text !== undefined) upd.text = sanitizeString(body.text, 500)
+      if (body.author !== undefined) upd.author = sanitizeString(body.author, 100)
+      if (body.featured !== undefined) upd.featured = !!body.featured
+      if (body.active !== undefined) upd.active = !!body.active
+      await db.collection('quotes').updateOne({ id }, { $set: upd })
+      await logAudit(db, admin.id, 'quote.update', id)
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+    if (route.match(/^\/admin\/quotes\/[^/]+$/) && method === 'DELETE') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const id = route.split('/')[3]
+      await db.collection('quotes').deleteOne({ id })
+      await logAudit(db, admin.id, 'quote.delete', id)
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+
+    // ============ ADMIN: ANNOUNCEMENTS ============
+    if (route === '/admin/announcements' && method === 'GET') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const list = await db.collection('announcements').find({}).sort({ pinned: -1, createdAt: -1 }).toArray()
+      return handleCORS(NextResponse.json({ announcements: list.map(({ _id, ...r }) => r) }))
+    }
+    if (route === '/admin/announcements' && method === 'POST') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const body = await request.json().catch(() => ({}))
+      const item = {
+        id: uuidv4(),
+        title: sanitizeString(body.title, 200),
+        body: sanitizeString(body.body, 2000),
+        tone: ['info', 'success', 'warn', 'critical'].includes(body.tone) ? body.tone : 'info',
+        active: body.active !== false,
+        pinned: !!body.pinned,
+        startsAt: body.startsAt || null,
+        endsAt: body.endsAt || null,
+        createdAt: new Date().toISOString(),
+      }
+      if (!item.title) return handleCORS(NextResponse.json({ error: 'Title required' }, { status: 400 }))
+      await db.collection('announcements').insertOne(item)
+      await logAudit(db, admin.id, 'announcement.create', item.id)
+      return handleCORS(NextResponse.json({ announcement: item }))
+    }
+    if (route.match(/^\/admin\/announcements\/[^/]+$/) && method === 'PATCH') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const id = route.split('/')[3]
+      const body = await request.json().catch(() => ({}))
+      const upd = {}
+      for (const k of ['title', 'body']) if (body[k] !== undefined) upd[k] = sanitizeString(body[k], k === 'title' ? 200 : 2000)
+      for (const k of ['active', 'pinned']) if (body[k] !== undefined) upd[k] = !!body[k]
+      if (body.tone !== undefined && ['info', 'success', 'warn', 'critical'].includes(body.tone)) upd.tone = body.tone
+      for (const k of ['startsAt', 'endsAt']) if (body[k] !== undefined) upd[k] = body[k]
+      await db.collection('announcements').updateOne({ id }, { $set: upd })
+      await logAudit(db, admin.id, 'announcement.update', id)
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+    if (route.match(/^\/admin\/announcements\/[^/]+$/) && method === 'DELETE') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const id = route.split('/')[3]
+      await db.collection('announcements').deleteOne({ id })
+      await logAudit(db, admin.id, 'announcement.delete', id)
+      return handleCORS(NextResponse.json({ ok: true }))
+    }
+
+    // ============ ADMIN: ANALYTICS ============
+    if (route === '/admin/analytics' && method === 'GET') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const totalUsers = await db.collection('users').countDocuments()
+      const since24 = new Date(Date.now() - 86400000).toISOString()
+      const activeUsers = await db.collection('users').countDocuments({ 'branches.lastActiveDate': { $gte: since24 } })
+      const totalSessions = await db.collection('study_sessions').countDocuments()
+      const totalPosts = await db.collection('community_posts').countDocuments()
+      const totalMinutes = await db.collection('study_sessions').aggregate([{ $group: { _id: null, m: { $sum: '$durationMinutes' } } }]).toArray()
+      const byBranch = { CS: 0, DA: 0, ECE: 0, EE: 0, ME: 0, CE: 0 }
+      const all = await db.collection('users').find({}, { projection: { branches: 1 } }).toArray()
+      all.forEach((u) => (u.branches || []).forEach((b) => { if (byBranch[b.branchCode] !== undefined) byBranch[b.branchCode] += 1 }))
+      const recentSignups = await db.collection('users').find({}, { projection: { createdAt: 1 } }).sort({ createdAt: -1 }).limit(30).toArray()
+      const signupsByDay = {}
+      recentSignups.forEach((u) => { const d = (u.createdAt || '').split('T')[0]; signupsByDay[d] = (signupsByDay[d] || 0) + 1 })
+      const audit = await db.collection('audit_logs').find({}).sort({ createdAt: -1 }).limit(30).toArray()
+      return handleCORS(NextResponse.json({
+        totals: { users: totalUsers, activeUsers, sessions: totalSessions, posts: totalPosts, minutes: totalMinutes[0]?.m || 0 },
+        byBranch,
+        signupsByDay,
+        auditLog: audit.map(({ _id, ...r }) => r),
+      }))
+    }
+
+    // ============ PUBLIC CONTENT ============
+    if (route === '/content/quote' && method === 'GET') {
+      const list = await db.collection('quotes').find({ active: true }).toArray()
+      if (!list.length) return handleCORS(NextResponse.json({ quote: null }))
+      const featured = list.filter((q) => q.featured)
+      const pool = featured.length ? featured : list
+      const pick = pool[Math.floor(Math.random() * pool.length)]
+      const { _id, ...r } = pick
+      return handleCORS(NextResponse.json({ quote: r }))
+    }
+    if (route === '/content/announcements' && method === 'GET') {
+      const now = new Date().toISOString()
+      const list = await db.collection('announcements').find({
+        active: true,
+        $and: [
+          { $or: [{ startsAt: null }, { startsAt: { $lte: now } }] },
+          { $or: [{ endsAt: null }, { endsAt: { $gte: now } }] },
+        ],
+      }).sort({ pinned: -1, createdAt: -1 }).limit(5).toArray()
+      return handleCORS(NextResponse.json({ announcements: list.map(({ _id, ...r }) => r) }))
+    }
+    if (route === '/content/youtube' && method === 'GET') {
+      const branch = url.searchParams.get('branch')
+      const filter = branch ? { branchCode: branch } : {}
+      const list = await db.collection('youtube_videos').find(filter).sort({ pinned: -1, featured: -1, createdAt: -1 }).limit(50).toArray()
+      return handleCORS(NextResponse.json({ videos: list.map(({ _id, ...r }) => r) }))
     }
 
     return handleCORS(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))

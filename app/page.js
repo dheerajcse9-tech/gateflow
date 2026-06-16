@@ -17,6 +17,7 @@ import {
   ChevronDown, Plus, Play, Pause, RotateCcw, Check, Trophy, Users, Sparkles,
   TrendingUp, BarChart3, Search, GraduationCap, Headphones, Settings as SettingsIcon,
   LogOut, ArrowUpRight, Star, MessageSquare, FileText, Youtube, Video,
+  Quote, Megaphone,
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -196,6 +197,61 @@ function AuthScreen({ onAuth }) {
         </Card>
       </div>
     </div>
+  )
+}
+
+// =================== ANNOUNCEMENT BANNER ===================
+function AnnouncementBanner() {
+  const [items, setItems] = useState([])
+  const [dismissed, setDismissed] = useState({})
+  useEffect(() => {
+    fetch('/api/content/announcements').then((r) => r.json()).then((d) => setItems(d.announcements || []))
+    try {
+      const d = JSON.parse(sessionStorage.getItem('gp_dismissed_ann') || '{}')
+      setDismissed(d)
+    } catch {}
+  }, [])
+  const visible = items.filter((a) => !dismissed[a.id])
+  if (!visible.length) return null
+  const tone = (t) => ({
+    info: 'from-blue-500/90 to-indigo-500/90',
+    success: 'from-emerald-500/90 to-teal-500/90',
+    warn: 'from-amber-500/90 to-orange-500/90',
+    critical: 'from-red-500/90 to-rose-500/90',
+  })[t] || 'from-[#FF7A18] to-[#FFB547]'
+  return (
+    <div className="space-y-2 px-3 pt-3">
+      {visible.map((a) => (
+        <div key={a.id} className={`container mx-auto rounded-2xl p-4 text-white shadow-lg bg-gradient-to-r ${tone(a.tone)} flex items-start gap-3`}>
+          <Megaphone className="w-5 h-5 shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <div className="font-bold">{a.title}</div>
+            {a.body && <div className="text-sm opacity-95 mt-0.5">{a.body}</div>}
+          </div>
+          <button onClick={() => { const d = { ...dismissed, [a.id]: 1 }; setDismissed(d); sessionStorage.setItem('gp_dismissed_ann', JSON.stringify(d)) }} className="text-white/90 hover:text-white text-xl leading-none px-2">×</button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function DynamicQuote() {
+  const [quote, setQuote] = useState(null)
+  useEffect(() => { fetch('/api/content/quote').then((r) => r.json()).then((d) => setQuote(d.quote)) }, [])
+  if (!quote) return null
+  return (
+    <section className="rounded-3xl p-8 card-luxe relative overflow-hidden">
+      <div className="absolute -top-16 -right-16 w-64 h-64 rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #FFB547 0%, transparent 65%)' }} />
+      <div className="relative flex items-start gap-4">
+        <div className="w-12 h-12 rounded-2xl sunrise-gradient flex items-center justify-center shadow-lg shrink-0">
+          <Quote className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="font-serif-display text-2xl md:text-3xl font-bold text-[#1A1A1A] leading-snug">"{quote.text}"</p>
+          <p className="text-sm text-[#A47148] mt-2 font-semibold tracking-wider uppercase">— {quote.author}</p>
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -458,6 +514,8 @@ function HomePage({ user, activeBranch, snapshot, heatmap, onTopicComplete, onRe
           <p className="text-sm mt-2 opacity-90 max-w-md mx-auto">Consistency is key — complete a topic, revise, or log time today to keep it alive.</p>
         </div>
       </section>
+
+      <DynamicQuote />
 
       {/* Quick actions */}
       <section>
@@ -1444,6 +1502,7 @@ function App() {
       <TopBar user={user} activeBranch={activeBranch} />
       <ActivityTicker />
       <NavBar user={user} page={page} setPage={setPage} activeBranch={activeBranch} onSwitchBranch={switchBranch} onLogout={logout} onAddBranch={addBranch} />
+      <AnnouncementBanner />
       <main className="fade-up">
       {page === 'Home' && <HomePage user={user} activeBranch={activeBranch} snapshot={snapshot} heatmap={heatmap} onRefresh={refresh} setPage={setPage} />}
       {page === 'Weightage' && <WeightagePage user={user} activeBranch={activeBranch} />}
