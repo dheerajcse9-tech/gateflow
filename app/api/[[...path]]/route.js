@@ -325,7 +325,24 @@ async function handleRoute(request, { params }) {
       const range = url.searchParams.get('range') || 'today'
       let query = { userId }
       if (range === 'today') query.date = todayISO()
-      const sessions = await db.collection('study_sessions').find(query).sort({ createdAt: -1 }).limit(500).toArray()
+      else if (range === 'week') {
+        const days = []
+        for (let i = 0; i < 7; i++) {
+          const d = new Date()
+          d.setDate(d.getDate() - i)
+          days.push(d.toISOString().split('T')[0])
+        }
+        query.date = { $in: days }
+      } else if (range === 'prevweek') {
+        const days = []
+        for (let i = 7; i < 14; i++) {
+          const d = new Date()
+          d.setDate(d.getDate() - i)
+          days.push(d.toISOString().split('T')[0])
+        }
+        query.date = { $in: days }
+      }
+      const sessions = await db.collection('study_sessions').find(query).sort({ createdAt: -1 }).limit(1000).toArray()
       const cleaned = sessions.map(({ _id, ...rest }) => rest)
       return handleCORS(NextResponse.json({ sessions: cleaned }))
     }

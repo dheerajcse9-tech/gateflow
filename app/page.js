@@ -18,6 +18,13 @@ import {
   TrendingUp, BarChart3, Search, GraduationCap, Headphones, Settings as SettingsIcon,
   LogOut, ArrowUpRight, Star, MessageSquare, FileText, Youtube, Video,
 } from 'lucide-react'
+import {
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  Tooltip as RTooltip, ResponsiveContainer, LineChart, Line, Legend,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
+} from 'recharts'
+
+const CHART_COLORS = ['#FF7A18', '#FFB547', '#FFC857', '#A47148', '#FF6B6B', '#2BBF7E', '#1A1A1A', '#FFE5D0', '#F6A65A', '#D97706', '#8B5CF6', '#06B6D4']
 
 const BRANCHES = [
   { code: 'CS', name: 'Computer Science & IT', short: 'Computer Science' },
@@ -85,19 +92,21 @@ function AuthScreen({ onAuth }) {
   return (
     <div className="min-h-screen flex">
       {/* Left brand panel */}
-      <div className="hidden lg:flex flex-col justify-between w-3/5 p-12" style={{ background: 'linear-gradient(135deg,#0D1B2E 0%,#142236 100%)', color: 'white' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#F5A623' }}>
-            <GraduationCap className="w-6 h-6 text-[#0D1B2E]" />
+      <div className="hidden lg:flex flex-col justify-between w-3/5 p-12 relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#1A1A1A 0%,#2A2A2A 100%)', color: 'white' }}>
+        <div className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #FF7A18 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-40 -left-32 w-[500px] h-[500px] rounded-full opacity-20" style={{ background: 'radial-gradient(circle, #FFB547 0%, transparent 70%)' }} />
+        <div className="relative flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center sunrise-gradient">
+            <GraduationCap className="w-6 h-6 text-white" />
           </div>
           <span className="font-serif-display text-xl font-bold">GatePlus</span>
         </div>
-        <div>
-          <div className="w-28 h-28 rounded-2xl flex items-center justify-center mb-8" style={{ background: '#142236', border: '1px solid #1E3250' }}>
-            <span className="font-serif-display text-5xl font-bold" style={{ color: '#F5A623' }}>G+</span>
+        <div className="relative">
+          <div className="w-28 h-28 rounded-2xl flex items-center justify-center mb-8 sunrise-gradient float-glow">
+            <span className="font-serif-display text-5xl font-bold text-white">G+</span>
           </div>
-          <h1 className="font-serif-display text-5xl font-bold leading-tight mb-3">Crack GATE with<br/>Consistency.</h1>
-          <p className="text-lg" style={{ color: '#A0AEC0' }}>One platform. One goal. AIR.</p>
+          <h1 className="font-serif-display text-5xl font-bold leading-tight mb-3">Crack GATE with<br/><span className="sunrise-text">Consistency.</span></h1>
+          <p className="text-lg" style={{ color: '#FFE5D0' }}>One platform. One goal. AIR.</p>
           <div className="mt-10 space-y-5">
             {[
               [BarChart3, 'Smart Study Tracking', 'Track study hours, topics, and progress in real time.'],
@@ -106,25 +115,25 @@ function AuthScreen({ onAuth }) {
               [Users, 'Doubt Solving Community', 'Get your doubts solved by peers and experts.'],
               [Trophy, 'Leaderboards & Contests', 'Compete with aspirants across India.'],
             ].map(([Icon, title, sub], i) => (
-              <div key={i} className="flex gap-3 items-start">
-                <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ border: '1px solid #1E3250' }}>
-                  <Icon className="w-4 h-4" style={{ color: '#F5A623' }} />
+              <div key={i} className="flex gap-3 items-start fade-up" style={{ animationDelay: `${i * 80}ms` }}>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(255,181,71,0.12)', border: '1px solid rgba(255,181,71,0.25)' }}>
+                  <Icon className="w-4 h-4" style={{ color: '#FFB547' }} />
                 </div>
                 <div>
                   <div className="font-semibold">{title}</div>
-                  <div className="text-sm" style={{ color: '#A0AEC0' }}>{sub}</div>
+                  <div className="text-sm" style={{ color: '#B8A89A' }}>{sub}</div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-        <div className="text-sm" style={{ color: '#A0AEC0' }}>© GatePlus — India's largest GATE prep community</div>
+        <div className="relative text-sm" style={{ color: '#B8A89A' }}>© GatePlus — India's most elegant GATE prep experience</div>
       </div>
 
       {/* Right form */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-[#F7F8FA]">
+      <div className="flex-1 flex items-center justify-center p-6 bg-[#FFFDF8]">
         <Card className="w-full max-w-md p-8 shadow-xl">
-          <h2 className="font-serif-display text-2xl font-bold text-center text-[#0D1B2E]">
+          <h2 className="font-serif-display text-2xl font-bold text-center text-[#1A1A1A]">
             {mode === 'signup' ? 'Create your GatePlus account' : 'Welcome back to GatePlus'}
           </h2>
           <p className="text-center text-sm text-slate-500 mt-1 mb-6">
@@ -172,14 +181,14 @@ function AuthScreen({ onAuth }) {
                 </div>
               </>
             )}
-            <Button type="submit" disabled={loading} className="w-full bg-[#0D1B2E] hover:bg-[#142236] text-white h-11 text-base rounded-lg">
+            <Button type="submit" disabled={loading} className="w-full btn-sunrise h-12 text-base rounded-xl font-semibold">
               {loading ? '...' : mode === 'signup' ? 'Create Account' : 'Sign In'}
             </Button>
           </form>
           <div className="my-5 border-t border-slate-200" />
           <p className="text-sm text-center text-slate-600">
             {mode === 'signup' ? 'Already have an account? ' : 'New here? '}
-            <button onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')} className="font-bold text-[#0D1B2E] hover:underline">
+            <button onClick={() => setMode(mode === 'signup' ? 'login' : 'signup')} className="font-bold text-[#1A1A1A] hover:underline">
               {mode === 'signup' ? 'Sign In' : 'Create an account'}
             </button>
           </p>
@@ -206,14 +215,14 @@ function TopBar({ user, activeBranch }) {
   }, [tick, target])
   const targetLabel = new Date(target).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
   return (
-    <div className="w-full" style={{ background: '#0D1B2E', color: 'white' }}>
+    <div className="w-full" style={{ background: '#1A1A1A', color: 'white' }}>
       <div className="container mx-auto px-4 py-2 flex items-center justify-center gap-3 text-sm flex-wrap">
-        <Calendar className="w-4 h-4" style={{ color: '#F5A623' }} />
+        <Calendar className="w-4 h-4" style={{ color: '#FFB547' }} />
         <span className="text-slate-300">GATE {activeBranch?.branchCode || 'CS'} {activeBranch?.targetYear || 2027} IN</span>
-        <span className="font-mono-digits font-bold" style={{ color: '#F5A623' }}>{diff.days}</span><span className="text-slate-400">DAYS</span>
-        <span className="font-mono-digits font-bold" style={{ color: '#F5A623' }}>{String(diff.hrs).padStart(2, '0')}</span><span className="text-slate-400">HRS</span>
-        <span className="font-mono-digits font-bold" style={{ color: '#F5A623' }}>{String(diff.min).padStart(2, '0')}</span><span className="text-slate-400">MIN</span>
-        <span className="font-mono-digits font-bold" style={{ color: '#F5A623' }}>{String(diff.sec).padStart(2, '0')}</span><span className="text-slate-400">SEC</span>
+        <span className="font-mono-digits font-bold" style={{ color: '#FFB547' }}>{diff.days}</span><span className="text-slate-400">DAYS</span>
+        <span className="font-mono-digits font-bold" style={{ color: '#FFB547' }}>{String(diff.hrs).padStart(2, '0')}</span><span className="text-slate-400">HRS</span>
+        <span className="font-mono-digits font-bold" style={{ color: '#FFB547' }}>{String(diff.min).padStart(2, '0')}</span><span className="text-slate-400">MIN</span>
+        <span className="font-mono-digits font-bold" style={{ color: '#FFB547' }}>{String(diff.sec).padStart(2, '0')}</span><span className="text-slate-400">SEC</span>
         <span className="hidden md:inline text-slate-400 ml-3">Target: {targetLabel}</span>
       </div>
     </div>
@@ -245,13 +254,13 @@ function ActivityTicker() {
   }
   const seq = [...items, ...items]
   return (
-    <div className="w-full overflow-hidden border-y" style={{ background: '#142236', borderColor: '#1E3250' }}>
+    <div className="w-full overflow-hidden border-y" style={{ background: '#2A2A2A', borderColor: '#1E3250' }}>
       <div className="animate-marquee py-2 text-[13px]" style={{ color: '#A0AEC0' }}>
         {seq.map((it, i) => (
           <span key={i} className="px-6 inline-flex items-center gap-2 shrink-0">
             {it.type === 'evt' ? (
               <>
-                <Star className="w-3 h-3" style={{ color: '#F5A623' }} />
+                <Star className="w-3 h-3" style={{ color: '#FFB547' }} />
                 <span className="text-white font-medium">{it.data.username}</span>
                 <span className="text-slate-500 lowercase">{it.data.branchCode}</span>
                 <span>{it.data.action}</span>
@@ -261,7 +270,7 @@ function ActivityTicker() {
               </>
             ) : (
               <>
-                <GraduationCap className="w-3 h-3" style={{ color: '#14B8A6' }} />
+                <GraduationCap className="w-3 h-3" style={{ color: '#FF7A18' }} />
                 <span>{(it.data.total || 1317).toLocaleString()} GATE aspirants are preparing on GatePlus across CS, DA, EC, EE, ME &amp; CE</span>
                 <span className="text-slate-600">|</span>
               </>
@@ -274,52 +283,92 @@ function ActivityTicker() {
 }
 
 // =================== NAV BAR ===================
-const NAV_ITEMS = ['Home', 'Weightage', 'Progress', 'Revision', 'Dashboard', 'Community', 'Resources', 'PYQs', 'Mock Tests']
+const NAV_ITEMS = [
+  { name: 'Home', icon: Sparkles },
+  { name: 'Weightage', icon: TrendingUp },
+  { name: 'Progress', icon: Check },
+  { name: 'Revision', icon: RotateCcw },
+  { name: 'Dashboard', icon: BarChart3 },
+  { name: 'Community', icon: Users },
+  { name: 'Resources', icon: BookOpen },
+  { name: 'PYQs', icon: FileText },
+  { name: 'Mock Tests', icon: Trophy },
+]
 
 function NavBar({ user, page, setPage, activeBranch, onSwitchBranch, onLogout, onAddBranch }) {
-  const [open, setOpen] = useState(false)
   return (
-    <div className="w-full bg-white border-b sticky top-0 z-30 shadow-sm">
-      <div className="container mx-auto px-4 h-14 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <button onClick={() => setPage('Home')} className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#0D1B2E] flex items-center justify-center">
-              <Headphones className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-serif-display text-lg font-bold text-[#0D1B2E]">GatePlus</span>
-          </button>
-          <Select value={activeBranch?.branchCode} onValueChange={onSwitchBranch}>
-            <SelectTrigger className="h-8 w-auto border-slate-200 text-xs font-semibold">
-              <SelectValue>{activeBranch?.branchCode} &apos;{String(activeBranch?.targetYear || 27).slice(-2)}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {user.branches.map((b) => (
-                <SelectItem key={b.branchCode} value={b.branchCode}>{b.branchCode} &apos;{String(b.targetYear).slice(-2)}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <nav className="hidden lg:flex items-center gap-1">
-          {NAV_ITEMS.map((item) => (
-            <button key={item} onClick={() => setPage(item)} className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${page === item ? 'bg-[#0D1B2E] text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
-              {item}
+    <div className="w-full sticky top-3 z-30 px-3">
+      <div className="container mx-auto">
+        <div className="glass rounded-2xl shadow-[0_10px_40px_-12px_rgba(255,122,24,0.18)] px-4 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 shrink-0">
+            <button onClick={() => setPage('Home')} className="flex items-center gap-2 group">
+              <div className="w-9 h-9 rounded-xl sunrise-gradient flex items-center justify-center shadow-md group-hover:scale-105 transition">
+                <Headphones className="w-4 h-4 text-white" />
+              </div>
+              <span className="font-serif-display text-lg font-bold text-[#1A1A1A] hidden sm:block">Gate<span className="sunrise-text">Plus</span></span>
             </button>
-          ))}
-        </nav>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setPage('Settings')} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-xs font-bold text-[#0D1B2E]">
-            {user.username[0].toUpperCase()}
-          </button>
-          <button onClick={onLogout} className="hidden md:flex text-slate-500 hover:text-[#0D1B2E]" title="Sign out"><LogOut className="w-4 h-4" /></button>
+            <Select value={activeBranch?.branchCode} onValueChange={onSwitchBranch}>
+              <SelectTrigger className="h-9 w-auto border-[#FFE5D0] bg-[#FFF8EE] text-xs font-bold rounded-full px-3">
+                <SelectValue>{activeBranch?.branchCode} '{String(activeBranch?.targetYear || 27).slice(-2)}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {user.branches.map((b) => (
+                  <SelectItem key={b.branchCode} value={b.branchCode}>{b.branchCode} '{String(b.targetYear).slice(-2)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <nav className="hidden xl:flex items-center gap-1">
+            {NAV_ITEMS.map(({ name, icon: Icon }) => (
+              <button key={name} onClick={() => setPage(name)} className={`px-3 py-1.5 rounded-xl text-sm font-medium transition flex items-center gap-1.5 ${page === name ? 'sunrise-gradient text-white shadow-md' : 'text-[#2A2A2A] hover:bg-[#FFE5D0]/60'}`}>
+                <Icon className="w-3.5 h-3.5" />
+                <span>{name}</span>
+              </button>
+            ))}
+          </nav>
+          <nav className="hidden lg:flex xl:hidden items-center gap-0.5">
+            {NAV_ITEMS.map(({ name, icon: Icon }) => (
+              <button key={name} onClick={() => setPage(name)} title={name} className={`w-9 h-9 rounded-xl transition flex items-center justify-center ${page === name ? 'sunrise-gradient text-white shadow-md' : 'text-[#2A2A2A] hover:bg-[#FFE5D0]/60'}`}>
+                <Icon className="w-4 h-4" />
+              </button>
+            ))}
+          </nav>
+          <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#FFF8EE] text-[#FF7A18] border border-[#FFE5D0]">
+              <Flame className="w-3 h-3" />{activeBranch?.streak || 0}d
+            </div>
+            <button onClick={() => setPage('Settings')} className="w-9 h-9 rounded-full sunrise-gradient flex items-center justify-center text-xs font-bold text-white shadow-md">
+              {user.username[0].toUpperCase()}
+            </button>
+            <button onClick={onLogout} className="hidden md:flex w-9 h-9 rounded-full hover:bg-[#FFE5D0]/60 items-center justify-center text-[#2A2A2A]" title="Sign out"><LogOut className="w-4 h-4" /></button>
+          </div>
         </div>
       </div>
-      <nav className="lg:hidden flex overflow-x-auto px-4 pb-2 gap-1 scrollbar-thin">
-        {NAV_ITEMS.map((item) => (
-          <button key={item} onClick={() => setPage(item)} className={`shrink-0 px-3 py-1 rounded-md text-xs font-medium ${page === item ? 'bg-[#0D1B2E] text-white' : 'text-slate-600 bg-slate-100'}`}>
-            {item}
-          </button>
-        ))}
-      </nav>
+    </div>
+  )
+}
+
+function BottomNav({ page, setPage }) {
+  const items = [
+    { name: 'Home', icon: Sparkles },
+    { name: 'Progress', icon: Check },
+    { name: 'Dashboard', icon: BarChart3 },
+    { name: 'Community', icon: Users },
+    { name: 'Settings', icon: SettingsIcon },
+  ]
+  return (
+    <div className="lg:hidden fixed bottom-3 left-3 right-3 z-40">
+      <div className="glass rounded-2xl shadow-[0_10px_40px_-8px_rgba(255,122,24,0.25)] px-2 py-2 flex items-center justify-around">
+        {items.map(({ name, icon: Icon }) => {
+          const active = page === name
+          return (
+            <button key={name} onClick={() => setPage(name)} className={`flex-1 flex flex-col items-center gap-0.5 py-1.5 rounded-xl transition ${active ? 'sunrise-gradient text-white shadow-md' : 'text-[#2A2A2A]'}`}>
+              <Icon className="w-4 h-4" />
+              <span className="text-[10px] font-semibold">{name}</span>
+            </button>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -334,28 +383,33 @@ function HomePage({ user, activeBranch, snapshot, heatmap, onTopicComplete, onRe
   const dateLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-10">
       {/* Hero */}
-      <div className="rounded-2xl p-8 md:p-12 relative overflow-hidden" style={{ background: 'linear-gradient(135deg,#0D1B2E 0%,#142236 100%)', color: 'white' }}>
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+      <div className="rounded-3xl p-8 md:p-12 relative overflow-hidden card-luxe">
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full opacity-40" style={{ background: 'radial-gradient(circle, #FF7A18 0%, transparent 65%)' }} />
+        <div className="absolute -bottom-32 -left-20 w-[400px] h-[400px] rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #FFB547 0%, transparent 65%)' }} />
         <div className="relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium mb-5" style={{ border: '1px solid #F5A623', color: '#F5A623' }}>
-            <Trophy className="w-3 h-3" /> Target: AIR &lt; 500 · GATE {activeBranch.branchCode} {activeBranch.targetYear}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 bg-white/70 border border-[#FFE5D0] text-[#A47148]">
+            <Trophy className="w-3 h-3 text-[#FF7A18]" /> Target: AIR &lt; 500 · GATE {activeBranch.branchCode} {activeBranch.targetYear}
           </div>
-          <h1 className="font-serif-display text-5xl md:text-6xl font-bold leading-tight">
-            GatePlus – <span className="italic" style={{ color: '#F5A623' }}>Discipline Se AIR Tak</span>
+          <h1 className="font-serif-display text-5xl md:text-6xl font-bold leading-[1.05] text-[#1A1A1A]">
+            GatePlus — <br className="hidden md:block" /><span className="italic sunrise-text">Discipline Se AIR Tak</span>
           </h1>
-          <p className="mt-4 text-lg font-medium">One Platform. One Goal. AIR.</p>
-          <p className="mt-2 max-w-3xl" style={{ color: '#A0AEC0' }}>
+          <p className="mt-5 text-lg font-medium text-[#2A2A2A]">One platform. One goal. AIR.</p>
+          <p className="mt-2 max-w-2xl text-[#6B5E52]">
             Countdown, study timer, streaks, XP rewards, progress analytics, priority topics, leaderboards, and a doubt-solving community — everything you need to stay consistent until exam day.
           </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <button onClick={() => setPage('Progress')} className="btn-sunrise px-5 py-2.5 rounded-xl font-semibold text-sm">Start tracking →</button>
+            <button onClick={() => setPage('Weightage')} className="px-5 py-2.5 rounded-xl font-semibold text-sm bg-white/80 border border-[#FFE5D0] text-[#2A2A2A] hover:bg-white">See ROI engine</button>
+          </div>
         </div>
       </div>
 
       {/* Today's snapshot */}
       <section>
         <div className="flex items-baseline justify-between mb-4">
-          <h2 className="font-serif-display text-2xl font-bold text-[#0D1B2E]">Today&apos;s Snapshot</h2>
+          <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">Today&apos;s Snapshot</h2>
           <span className="text-sm text-slate-500">{dateLabel}</span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -370,71 +424,71 @@ function HomePage({ user, activeBranch, snapshot, heatmap, onTopicComplete, onRe
             <span className="text-slate-900 font-medium">{Math.floor(studied/60)}h {studied%60}m / {Math.floor(goal/60)}h · {pct}%</span>
           </div>
           <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#14B8A6' }} />
+            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: '#FF7A18' }} />
           </div>
         </div>
       </section>
 
       {/* Explore branches */}
       <section>
-        <h3 className="font-serif-display text-xl font-bold text-[#0D1B2E] mb-3">Explore branches</h3>
+        <h3 className="font-serif-display text-2xl font-bold text-[#1A1A1A] mb-4">Explore branches</h3>
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
           {BRANCHES.map((b) => {
             const isActive = activeBranch.branchCode === b.code
             return (
-              <Card key={b.code} className={`min-w-[200px] p-4 cursor-pointer transition ${isActive ? 'ring-2 ring-[#14B8A6] bg-[#F0FDFA]' : 'hover:shadow-md'}`}>
+              <button key={b.code} className={`min-w-[200px] p-5 rounded-2xl text-left transition shrink-0 ${isActive ? 'sunrise-gradient text-white shadow-[0_12px_40px_-8px_rgba(255,122,24,0.45)]' : 'card-luxe hover:translate-y-[-2px]'}`}>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-lg text-[#0D1B2E]">{b.code}</span>
-                  {isActive && <span className="w-2 h-2 rounded-full bg-[#22C55E] pulse-dot" />}
+                  <span className={`font-serif-display font-bold text-xl ${isActive ? 'text-white' : 'text-[#1A1A1A]'}`}>{b.code}</span>
+                  {isActive && <span className="w-2 h-2 rounded-full bg-white pulse-dot" />}
                 </div>
-                <div className="text-sm text-slate-600 mb-2">{b.short}</div>
-                <div className="text-xs text-slate-400">12 subjects · {120 + Math.floor(Math.random() * 250)} aspirants</div>
-              </Card>
+                <div className={`text-sm ${isActive ? 'text-white/90' : 'text-[#2A2A2A]'}`}>{b.short}</div>
+                <div className={`text-xs mt-2 ${isActive ? 'text-white/70' : 'text-[#A47148]'}`}>12 subjects · {120 + Math.floor(Math.random() * 250)} aspirants</div>
+              </button>
             )
           })}
         </div>
       </section>
 
       {/* Streak banner */}
-      <section className="rounded-2xl p-6 text-center" style={{ background: 'linear-gradient(135deg,#FEF3C7 0%,#FDE68A 100%)' }}>
-        <div className="text-xs font-bold tracking-wider text-amber-800">🔥 COMPLETION STREAK</div>
-        <div className="font-serif-display text-3xl font-bold text-amber-900 mt-1">
-          {snapshot.streak || 0} Days
+      <section className="rounded-3xl p-8 text-center relative overflow-hidden sunrise-gradient text-white shadow-[0_20px_60px_-10px_rgba(255,122,24,0.45)]">
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: 'radial-gradient(white 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+        <div className="relative">
+          <div className="text-xs font-bold tracking-[0.2em] opacity-90">🔥 COMPLETION STREAK</div>
+          <div className="font-serif-display text-5xl font-bold mt-2">{snapshot.streak || 0} <span className="text-2xl font-normal">Days</span></div>
+          <p className="text-sm mt-2 opacity-90 max-w-md mx-auto">Consistency is key — complete a topic, revise, or log time today to keep it alive.</p>
         </div>
-        <p className="text-sm text-amber-800/80 mt-1">Consistency is key — complete a topic, revise, or log time today to keep it alive.</p>
       </section>
 
-      {/* Today's plan / quick action */}
+      {/* Quick actions */}
       <section>
-        <h3 className="font-serif-display text-xl font-bold text-[#0D1B2E] mb-3">Quick actions</h3>
+        <h3 className="font-serif-display text-2xl font-bold text-[#1A1A1A] mb-4">Quick actions</h3>
         <div className="grid md:grid-cols-3 gap-4">
-          <Card className="p-5 cursor-pointer hover:shadow-md" onClick={() => setPage('Progress')}>
-            <Check className="w-5 h-5 text-[#14B8A6]" />
-            <div className="font-bold mt-3">Mark topics complete</div>
-            <p className="text-sm text-slate-500 mt-1">Earn +20 XP each &amp; grow your streak.</p>
-          </Card>
-          <Card className="p-5 cursor-pointer hover:shadow-md" onClick={() => setPage('Progress')}>
-            <Clock className="w-5 h-5 text-[#F5A623]" />
-            <div className="font-bold mt-3">Start study timer</div>
-            <p className="text-sm text-slate-500 mt-1">Log every minute — even 1m counts.</p>
-          </Card>
-          <Card className="p-5 cursor-pointer hover:shadow-md" onClick={() => setPage('Weightage')}>
-            <TrendingUp className="w-5 h-5 text-[#0D1B2E]" />
-            <div className="font-bold mt-3">See ROI engine</div>
-            <p className="text-sm text-slate-500 mt-1">Highest-return subjects right now.</p>
-          </Card>
+          {[
+            { icon: Check, color: '#FF7A18', label: 'Mark topics complete', sub: 'Earn +20 XP each & grow your streak.', page: 'Progress' },
+            { icon: Clock, color: '#FFB547', label: 'Start study timer', sub: 'Log every minute — even 1m counts.', page: 'Progress' },
+            { icon: TrendingUp, color: '#A47148', label: 'See ROI engine', sub: 'Highest-return subjects right now.', page: 'Weightage' },
+          ].map(({ icon: Icon, color, label, sub, page }) => (
+            <button key={label} onClick={() => setPage(page)} className="card-luxe p-6 text-left hover:translate-y-[-2px] transition group">
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-3" style={{ background: `${color}22` }}>
+                <Icon className="w-5 h-5" style={{ color }} />
+              </div>
+              <div className="font-bold text-[#1A1A1A]">{label}</div>
+              <p className="text-sm text-[#6B5E52] mt-1">{sub}</p>
+              <span className="inline-flex items-center text-xs font-semibold mt-3 text-[#FF7A18] group-hover:gap-2 gap-1 transition-all">Open <ArrowUpRight className="w-3 h-3" /></span>
+            </button>
+          ))}
         </div>
       </section>
 
       {/* Heatmap */}
       <section>
         <div className="text-xs font-bold tracking-wider text-slate-500 mb-1">📅 MONTHLY STREAKS</div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#0D1B2E]">Your Month-by-Month Consistency</h2>
+        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">Your Month-by-Month Consistency</h2>
         <p className="text-sm text-slate-500 mt-1">Color depth reflects activity that day. Even one topic or one minute lights it up.</p>
         <Card className="p-6 mt-4 overflow-x-auto">
           <Heatmap heatmap={heatmap} />
           <div className="flex flex-wrap gap-4 text-xs text-slate-500 mt-4 items-center justify-between">
-            <div>Total active days: <b className="text-[#0D1B2E]">{user.totalActiveDays || 0}</b> · Max streak: <b className="text-[#0D1B2E]">{snapshot.maxStreak || 0}</b> · Current: <b className="text-[#0D1B2E]">{snapshot.streak || 0}</b> 🔥</div>
+            <div>Total active days: <b className="text-[#1A1A1A]">{user.totalActiveDays || 0}</b> · Max streak: <b className="text-[#1A1A1A]">{snapshot.maxStreak || 0}</b> · Current: <b className="text-[#1A1A1A]">{snapshot.streak || 0}</b> 🔥</div>
             <div className="flex items-center gap-2">
               <span>none</span>
               <div className="heatmap-cell" />
@@ -449,7 +503,7 @@ function HomePage({ user, activeBranch, snapshot, heatmap, onTopicComplete, onRe
       </section>
 
       <div className="text-center pt-4 pb-2">
-        <p className="font-serif-display text-xl font-bold text-[#0D1B2E]">All the best for GATE {activeBranch.branchCode} {activeBranch.targetYear} 🎯</p>
+        <p className="font-serif-display text-xl font-bold text-[#1A1A1A]">All the best for GATE {activeBranch.branchCode} {activeBranch.targetYear} 🎯</p>
         <p className="text-sm text-slate-500 mt-1">Built with 15-year data analysis · Smart prep beats hard prep.</p>
       </div>
     </div>
@@ -458,13 +512,14 @@ function HomePage({ user, activeBranch, snapshot, heatmap, onTopicComplete, onRe
 
 function StatCard({ icon, label, value, sub }) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-        {icon}<span>{label}</span>
+    <div className="card-luxe p-5 hover:translate-y-[-2px] transition">
+      <div className="flex items-center gap-2 text-[10px] font-bold text-[#A47148] uppercase tracking-[0.12em]">
+        <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-[#FFE5D0] text-[#FF7A18]">{icon}</span>
+        <span>{label}</span>
       </div>
-      <div className="font-serif-display text-3xl font-bold text-[#0D1B2E] mt-2">{value}</div>
-      <div className="text-xs text-slate-500 mt-1">{sub}</div>
-    </Card>
+      <div className="font-serif-display text-3xl font-bold text-[#1A1A1A] mt-3">{value}</div>
+      <div className="text-xs text-[#6B5E52] mt-1">{sub}</div>
+    </div>
   )
 }
 
@@ -537,11 +592,11 @@ function WeightagePage({ user, activeBranch }) {
     <div className="container mx-auto px-4 py-6 space-y-8">
       <section>
         <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📈 15-YEAR ANALYSIS (2010–2024)</div>
-        <h1 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">Subject Weightage — {activeBranch.branchCode} — High to Low</h1>
+        <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">Subject Weightage — {activeBranch.branchCode} — High to Low</h1>
         <p className="text-slate-500 mt-1">Average marks expected per subject based on past 15 GATE {activeBranch.branchCode} papers. Sorted by weightage. Target: GATE {activeBranch.targetYear}.</p>
         <Card className="mt-5 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-[#0D1B2E] text-white text-left">
+            <thead className="bg-[#1A1A1A] text-white text-left">
               <tr><th className="p-3 w-10">#</th><th className="p-3">Subject</th><th className="p-3">Avg Marks</th><th className="p-3">Range</th><th className="p-3">Weightage</th><th className="p-3">Difficulty</th></tr>
             </thead>
             <tbody>
@@ -549,11 +604,11 @@ function WeightagePage({ user, activeBranch }) {
                 <tr key={s.key} className="border-b last:border-0">
                   <td className="p-3 font-mono text-slate-400">{String(i+1).padStart(2,'0')}</td>
                   <td className="p-3 font-medium">{s.name}</td>
-                  <td className="p-3"><span className="font-bold text-[#0D1B2E] text-lg">{s.avgMarks}</span> <span className="text-xs text-slate-400">marks</span></td>
+                  <td className="p-3"><span className="font-bold text-[#1A1A1A] text-lg">{s.avgMarks}</span> <span className="text-xs text-slate-400">marks</span></td>
                   <td className="p-3 text-slate-500">{s.range}</td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 rounded bg-slate-200 w-24 overflow-hidden"><div className="h-full" style={{ width: `${s.weightage * 5}%`, background: '#0D1B2E' }} /></div>
+                      <div className="h-2 rounded bg-slate-200 w-24 overflow-hidden"><div className="h-full" style={{ width: `${s.weightage * 5}%`, background: '#1A1A1A' }} /></div>
                       <span className="font-semibold">{s.weightage}%</span>
                     </div>
                   </td>
@@ -566,11 +621,11 @@ function WeightagePage({ user, activeBranch }) {
       </section>
 
       <section>
-        <h2 className="font-serif-display text-2xl font-bold text-[#0D1B2E]">Subject ROI Engine</h2>
+        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">Subject ROI Engine</h2>
         <p className="text-slate-500 mt-1">Pending marks vs syllabus size — what gives the highest return on your effort right now.</p>
         <Card className="mt-5 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-[#0D1B2E] text-white text-left">
+            <thead className="bg-[#1A1A1A] text-white text-left">
               <tr><th className="p-3">Subject</th><th className="p-3">Pending</th><th className="p-3">ROI Score</th><th className="p-3">Tier</th></tr>
             </thead>
             <tbody>
@@ -580,7 +635,7 @@ function WeightagePage({ user, activeBranch }) {
                   <td className="p-3">{r.pendingMarks} / {r.avgMarks}</td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 rounded bg-slate-200 w-24 overflow-hidden"><div className="h-full" style={{ width: `${Math.min(100, r.score)}%`, background: '#14B8A6' }} /></div>
+                      <div className="h-2 rounded bg-slate-200 w-24 overflow-hidden"><div className="h-full" style={{ width: `${Math.min(100, r.score)}%`, background: '#FF7A18' }} /></div>
                       <span className="font-semibold">{r.score}</span>
                     </div>
                   </td>
@@ -594,7 +649,7 @@ function WeightagePage({ user, activeBranch }) {
 
       <section>
         <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📖 SOURCE OF TRUTH</div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#0D1B2E]">Official GATE Syllabus</h2>
+        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">Official GATE Syllabus</h2>
         <p className="text-slate-500 mt-1">Official sections for your branch. Tap to expand.</p>
         <Card className="mt-5 p-2">
           <Accordion type="single" collapsible>
@@ -643,18 +698,18 @@ function ProgressPage({ user, activeBranch, onRefresh }) {
 
       <section>
         <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-slate-500 bg-slate-100 mb-2">⇅ YOUR PROGRESS</div>
-        <h2 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">Track Topics. Watch Completion Rise.</h2>
+        <h2 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">Track Topics. Watch Completion Rise.</h2>
         <p className="text-slate-500 mt-1">Tick off topics as you finish them. Each topic = +20 XP.</p>
         <Card className="p-5 mt-4">
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Overall Completion</div>
-              <div className="font-serif-display text-3xl font-bold text-[#0D1B2E] mt-1">{pct}% <span className="text-base font-medium text-slate-500">· {done}/{total} topics</span></div>
+              <div className="font-serif-display text-3xl font-bold text-[#1A1A1A] mt-1">{pct}% <span className="text-base font-medium text-slate-500">· {done}/{total} topics</span></div>
             </div>
-            <Badge variant="outline" className="text-[#0D1B2E]">XP: {branch.xp || 0}</Badge>
+            <Badge variant="outline" className="text-[#1A1A1A]">XP: {branch.xp || 0}</Badge>
           </div>
           <div className="h-3 rounded-full bg-slate-200 overflow-hidden">
-            <div className="h-full" style={{ width: `${pct}%`, background: '#14B8A6' }} />
+            <div className="h-full" style={{ width: `${pct}%`, background: '#FF7A18' }} />
           </div>
         </Card>
 
@@ -673,19 +728,19 @@ function ProgressPage({ user, activeBranch, onRefresh }) {
                 return (
                   <Card key={s.key} className="p-4">
                     <div className="flex items-center justify-between mb-1">
-                      <div className="font-semibold text-[#0D1B2E] text-sm">{s.name}</div>
+                      <div className="font-semibold text-[#1A1A1A] text-sm">{s.name}</div>
                       <Badge variant="secondary">{spct}%</Badge>
                     </div>
                     <div className="text-xs text-slate-500 mb-2">{sdone}/{subTopics.length} topics · {s.avgMarks} avg marks</div>
                     <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden mb-3">
-                      <div className="h-full" style={{ width: `${spct}%`, background: '#14B8A6' }} />
+                      <div className="h-full" style={{ width: `${spct}%`, background: '#FF7A18' }} />
                     </div>
                     <div className="space-y-1.5 max-h-72 overflow-y-auto pr-1 scrollbar-thin">
                       {subTopics.map((t) => {
                         const ck = completed.has(t.id)
                         return (
                           <button key={t.id} onClick={() => toggle(t)} disabled={busy === t.id} className="w-full flex items-center gap-2 text-left text-sm group p-1 rounded hover:bg-slate-50">
-                            <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${ck ? 'bg-[#14B8A6] border-[#14B8A6]' : 'border-slate-300'}`}>
+                            <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${ck ? 'bg-[#FF7A18] border-[#FF7A18]' : 'border-slate-300'}`}>
                               {ck && <Check className="w-3 h-3 text-white" />}
                             </div>
                             <span className={`flex-1 ${ck ? 'line-through text-slate-400' : ''}`}>{t.name}</span>
@@ -702,13 +757,13 @@ function ProgressPage({ user, activeBranch, onRefresh }) {
           <TabsContent value="priority" className="mt-4 space-y-4">
             {['HIGH', 'LOW'].map((pri) => (
               <Card key={pri} className="p-4">
-                <div className="font-semibold text-[#0D1B2E] mb-2">{pri} priority</div>
+                <div className="font-semibold text-[#1A1A1A] mb-2">{pri} priority</div>
                 <div className="grid md:grid-cols-2 gap-1.5">
                   {data.topics.filter((t) => t.priority === pri).map((t) => {
                     const ck = completed.has(t.id)
                     return (
                       <button key={t.id} onClick={() => toggle(t)} className="flex items-center gap-2 text-left text-sm p-1 hover:bg-slate-50 rounded">
-                        <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${ck ? 'bg-[#14B8A6] border-[#14B8A6]' : 'border-slate-300'}`}>{ck && <Check className="w-3 h-3 text-white" />}</div>
+                        <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${ck ? 'bg-[#FF7A18] border-[#FF7A18]' : 'border-slate-300'}`}>{ck && <Check className="w-3 h-3 text-white" />}</div>
                         <span className={ck ? 'line-through text-slate-400' : ''}>{t.subject.split(' & ')[0]} · {t.name}</span>
                       </button>
                     )
@@ -726,13 +781,13 @@ function ProgressPage({ user, activeBranch, onRefresh }) {
                 ['Phase 4 (Month 10–12): Revision + Aptitude', ['aptitude']],
               ].map(([label, keys]) => (
                 <Card key={label} className="p-4">
-                  <div className="font-semibold text-[#0D1B2E] mb-2">{label}</div>
+                  <div className="font-semibold text-[#1A1A1A] mb-2">{label}</div>
                   <div className="space-y-1.5 max-h-80 overflow-y-auto scrollbar-thin">
                     {data.topics.filter((t) => keys.includes(t.subjectKey)).map((t) => {
                       const ck = completed.has(t.id)
                       return (
                         <button key={t.id} onClick={() => toggle(t)} className="w-full flex items-center gap-2 text-left text-sm p-1 hover:bg-slate-50 rounded">
-                          <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${ck ? 'bg-[#14B8A6] border-[#14B8A6]' : 'border-slate-300'}`}>{ck && <Check className="w-3 h-3 text-white" />}</div>
+                          <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${ck ? 'bg-[#FF7A18] border-[#FF7A18]' : 'border-slate-300'}`}>{ck && <Check className="w-3 h-3 text-white" />}</div>
                           <span className={ck ? 'line-through text-slate-400' : ''}>{t.subject.split(' & ')[0]} · {t.name}</span>
                         </button>
                       )
@@ -782,8 +837,8 @@ function StudyTimer({ user, branch, subjects, topics, onLogged }) {
   return (
     <Card className="p-5">
       <div className="flex items-center gap-2 mb-3">
-        <Clock className="w-4 h-4 text-[#0D1B2E]" />
-        <h3 className="font-bold text-[#0D1B2E]">Study Timer</h3>
+        <Clock className="w-4 h-4 text-[#1A1A1A]" />
+        <h3 className="font-bold text-[#1A1A1A]">Study Timer</h3>
       </div>
       <div className="grid md:grid-cols-2 gap-3">
         <div>
@@ -802,10 +857,10 @@ function StudyTimer({ user, branch, subjects, topics, onLogged }) {
         </div>
       </div>
       <div className="text-center my-5">
-        <div className="font-mono-digits text-5xl font-bold text-[#0D1B2E]">{fmt(secs)}</div>
+        <div className="font-mono-digits text-5xl font-bold text-[#1A1A1A]">{fmt(secs)}</div>
         <div className="mt-3 flex justify-center gap-2">
           {!running ? (
-            <Button onClick={() => setRunning(true)} className="bg-[#0D1B2E] hover:bg-[#142236]"><Play className="w-4 h-4 mr-1" />Start</Button>
+            <Button onClick={() => setRunning(true)} className="bg-[#1A1A1A] hover:bg-[#2A2A2A]"><Play className="w-4 h-4 mr-1" />Start</Button>
           ) : (
             <Button onClick={() => setRunning(false)} variant="outline"><Pause className="w-4 h-4 mr-1" />Pause</Button>
           )}
@@ -816,7 +871,7 @@ function StudyTimer({ user, branch, subjects, topics, onLogged }) {
         <Label className="text-xs">ADD MINUTES MANUALLY</Label>
         <div className="flex gap-2 mt-1">
           <Input placeholder="e.g. 45" value={manual} onChange={(e) => setManual(e.target.value)} className="w-32" />
-          <Button onClick={logManual} className="bg-[#0D1B2E] hover:bg-[#142236]"><Plus className="w-4 h-4 mr-1" />Log</Button>
+          <Button onClick={logManual} className="bg-[#1A1A1A] hover:bg-[#2A2A2A]"><Plus className="w-4 h-4 mr-1" />Log</Button>
         </div>
       </div>
     </Card>
@@ -838,7 +893,7 @@ function RevisionPage({ user, activeBranch, onRefresh }) {
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-slate-500 bg-slate-100 mb-2">↺ REVISION</div>
-        <h1 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">Revise Completed Topics</h1>
+        <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">Revise Completed Topics</h1>
         <p className="text-slate-500 mt-1">Pick from topics you&apos;ve already finished and log revision (+20 XP, no double-counting as fresh study).</p>
       </div>
       {list.length === 0 ? (
@@ -848,7 +903,7 @@ function RevisionPage({ user, activeBranch, onRefresh }) {
           {list.map((t) => (
             <Card key={t.id} className="p-4 flex items-center justify-between">
               <div>
-                <div className="font-semibold text-[#0D1B2E]">{t.name}</div>
+                <div className="font-semibold text-[#1A1A1A]">{t.name}</div>
                 <div className="text-xs text-slate-500">{t.subject}</div>
               </div>
               <Button onClick={() => revise(t)} variant="outline" size="sm"><RotateCcw className="w-3 h-3 mr-1" />Revise</Button>
@@ -861,61 +916,198 @@ function RevisionPage({ user, activeBranch, onRefresh }) {
 }
 
 // =================== DASHBOARD ===================
+
 function DashboardPage({ user, activeBranch, snapshot }) {
   const xp = activeBranch.xp || 0
   const level = Math.floor(xp / 100) + 1
+  const [weekSessions, setWeekSessions] = useState([])
+  const [prevSessions, setPrevSessions] = useState([])
+  const [topicData, setTopicData] = useState({ subjects: [], topics: [] })
+
+  useEffect(() => {
+    fetch(`/api/sessions?userId=${user.id}&range=week`).then((r) => r.json()).then((d) => setWeekSessions(d.sessions || []))
+    fetch(`/api/sessions?userId=${user.id}&range=prevweek`).then((r) => r.json()).then((d) => setPrevSessions(d.sessions || []))
+    api.topics(activeBranch.branchCode).then(setTopicData)
+  }, [user.id, activeBranch.branchCode])
+
+  // Subjects focused (donut) — share of study time per subject this week
+  const subjShare = useMemo(() => {
+    const map = {}
+    weekSessions.forEach((s) => { map[s.subject] = (map[s.subject] || 0) + (s.durationMinutes || 0) })
+    return Object.entries(map).map(([name, value]) => ({ name, value }))
+  }, [weekSessions])
+
+  // Time per subject (bar)
+  const timePerSubject = useMemo(() => {
+    return [...subjShare].sort((a, b) => b.value - a.value)
+  }, [subjShare])
+
+  // Impression trend (line) - daily minutes current vs prev week
+  const trendData = useMemo(() => {
+    const lab = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const cur = [0, 0, 0, 0, 0, 0, 0]
+    const prv = [0, 0, 0, 0, 0, 0, 0]
+    const today = new Date()
+    weekSessions.forEach((s) => {
+      const d = new Date(s.date)
+      const diff = Math.floor((today - d) / 86400000)
+      const idx = 6 - diff
+      if (idx >= 0 && idx < 7) cur[idx] += s.durationMinutes || 0
+    })
+    prevSessions.forEach((s) => {
+      const d = new Date(s.date)
+      const diff = Math.floor((today - d) / 86400000) - 7
+      const idx = 6 - diff
+      if (idx >= 0 && idx < 7) prv[idx] += s.durationMinutes || 0
+    })
+    return lab.map((l, i) => ({ day: l, current: cur[i], previous: prv[i] }))
+  }, [weekSessions, prevSessions])
+
+  // Overall % completion per subject
+  const completion = useMemo(() => {
+    const completed = new Set(activeBranch.completedTopics || [])
+    return topicData.subjects.map((s) => {
+      const ts = topicData.topics.filter((t) => t.subjectKey === s.key)
+      const done = ts.filter((t) => completed.has(t.id)).length
+      const pct = ts.length ? Math.round((done / ts.length) * 100) : 0
+      return { name: s.name.split(' ')[0].slice(0, 8), full: s.name, pct }
+    })
+  }, [topicData, activeBranch.completedTopics])
+
+  // Resonance: blend of completion + revision + study time per subject (0-100)
+  const resonance = useMemo(() => {
+    const completed = new Set(activeBranch.completedTopics || [])
+    const revised = new Set(activeBranch.revisedTopics || [])
+    const timeBySubj = {}
+    weekSessions.forEach((s) => { timeBySubj[s.subject] = (timeBySubj[s.subject] || 0) + (s.durationMinutes || 0) })
+    return topicData.subjects.map((s) => {
+      const ts = topicData.topics.filter((t) => t.subjectKey === s.key)
+      const cp = ts.length ? ts.filter((t) => completed.has(t.id)).length / ts.length : 0
+      const rp = ts.length ? ts.filter((t) => revised.has(t.id)).length / ts.length : 0
+      const tp = Math.min(1, (timeBySubj[s.name] || 0) / 300)
+      const score = Math.round((cp * 50 + rp * 30 + tp * 20))
+      return { subject: s.name.split(' ')[0].slice(0, 6), score }
+    })
+  }, [topicData, activeBranch, weekSessions])
+
+  const totalWeekMin = weekSessions.reduce((a, s) => a + (s.durationMinutes || 0), 0)
+
   return (
     <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-slate-500 bg-slate-100 mb-2">📊 {activeBranch.branchCode} ANALYTICS</div>
-        <h1 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">Your Personal Dashboard</h1>
-        <p className="text-slate-500 mt-1">Every visual is computed from your real activity across Progress, Revision and Community.</p>
+        <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">Your Personal Dashboard</h1>
+        <p className="text-slate-500 mt-1">Every visual is computed from your real activity. Switch tabs on cards below to time-travel.</p>
       </div>
+
       <div className="grid md:grid-cols-4 gap-4">
         <StatCard icon={<Flame className="w-4 h-4 text-blue-600" />} label="STREAK DAYS" value={String(snapshot.streak || 0)} sub="current streak" />
-        <StatCard icon={<Clock className="w-4 h-4 text-purple-600" />} label="STUDIED TODAY" value={`${Math.floor((snapshot.totalMinutes||0)/60)}h ${(snapshot.totalMinutes||0)%60}m`} sub="today" />
-        <StatCard icon={<Check className="w-4 h-4 text-green-600" />} label="TOPICS COMPLETED" value={String(snapshot.completedTopics || 0)} sub="all time" />
+        <StatCard icon={<Clock className="w-4 h-4 text-purple-600" />} label="WEEK STUDY TIME" value={`${Math.floor(totalWeekMin/60)}h ${totalWeekMin%60}m`} sub="last 7 days" />
+        <StatCard icon={<Check className="w-4 h-4 text-green-600" />} label="TOPICS COMPLETED" value={String((activeBranch.completedTopics || []).length)} sub="all time" />
         <StatCard icon={<Trophy className="w-4 h-4 text-pink-600" />} label="LEVEL" value={`L${level}`} sub={`${xp} XP · ${100 - (xp % 100)} to next`} />
       </div>
-      <div className="grid md:grid-cols-2 gap-4">
+
+      {/* XP Clubs */}
+      <Card className="p-5">
+        <h3 className="font-bold mb-2">XP Progress</h3>
+        <p className="text-sm text-slate-500 mb-3">{xp} XP toward Level {level + 1}</p>
+        <div className="h-3 bg-slate-200 rounded-full overflow-hidden"><div className="h-full" style={{ width: `${xp % 100}%`, background: '#EAB308' }} /></div>
+        <div className="mt-4 grid grid-cols-5 gap-2 text-xs">
+          {[500, 1000, 2000, 5000, 10000].map((th) => (
+            <div key={th} className={`p-2 rounded text-center ${xp >= th ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-400'}`}>
+              {th >= 1000 ? `${th/1000}K` : th} Club
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Row: 3 charts */}
+      <div className="grid lg:grid-cols-3 gap-4">
         <Card className="p-5">
-          <h3 className="font-bold mb-2">XP Progress</h3>
-          <p className="text-sm text-slate-500 mb-3">{xp} XP toward Level {level + 1}</p>
-          <div className="h-3 bg-slate-200 rounded-full overflow-hidden"><div className="h-full" style={{ width: `${xp % 100}%`, background: '#EAB308' }} /></div>
-          <div className="mt-4 grid grid-cols-5 gap-2 text-xs">
-            {[500, 1000, 2000, 5000, 10000].map((th) => (
-              <div key={th} className={`p-2 rounded text-center ${xp >= th ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-400'}`}>
-                {th >= 1000 ? `${th/1000}K` : th} Club
-              </div>
-            ))}
-          </div>
+          <h3 className="font-bold">Subjects Focused</h3>
+          <p className="text-xs text-slate-500 mb-2">Share of study time · last 7 days</p>
+          {subjShare.length === 0 ? (
+            <div className="h-56 flex items-center justify-center text-sm text-slate-400">No sessions this week. Log time to fill this in.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie data={subjShare} dataKey="value" nameKey="name" innerRadius={45} outerRadius={80} paddingAngle={2}>
+                  {subjShare.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                </Pie>
+                <RTooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </Card>
+
         <Card className="p-5">
-          <h3 className="font-bold mb-2">Subject Coverage</h3>
-          <SubjectCoverage user={user} branch={activeBranch} />
+          <h3 className="font-bold">Time per Subject</h3>
+          <p className="text-xs text-slate-500 mb-2">Minutes per subject · last 7 days</p>
+          {timePerSubject.length === 0 ? (
+            <div className="h-56 flex items-center justify-center text-sm text-slate-400">No data yet.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={timePerSubject} layout="vertical" margin={{ left: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} width={80} />
+                <RTooltip />
+                <Bar dataKey="value" fill="#FF7A18" radius={[0, 4, 4, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+
+        <Card className="p-5">
+          <h3 className="font-bold">Impression Trend</h3>
+          <p className="text-xs text-slate-500 mb-2">Daily minutes — current vs previous week</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={trendData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+              <YAxis tick={{ fontSize: 11 }} />
+              <RTooltip />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line type="monotone" dataKey="current" stroke="#EC4899" strokeWidth={2} name="This week" />
+              <Line type="monotone" dataKey="previous" stroke="#94A3B8" strokeWidth={2} strokeDasharray="4 4" name="Prev week" />
+            </LineChart>
+          </ResponsiveContainer>
         </Card>
       </div>
-    </div>
-  )
-}
 
-function SubjectCoverage({ user, branch }) {
-  const [data, setData] = useState({ subjects: [], topics: [] })
-  useEffect(() => { api.topics(branch.branchCode).then(setData) }, [branch.branchCode])
-  const completed = new Set(branch.completedTopics || [])
-  return (
-    <div className="space-y-2">
-      {data.subjects.map((s) => {
-        const ts = data.topics.filter((t) => t.subjectKey === s.key)
-        const done = ts.filter((t) => completed.has(t.id)).length
-        const pct = ts.length ? Math.round((done / ts.length) * 100) : 0
-        return (
-          <div key={s.key}>
-            <div className="flex justify-between text-xs"><span className="text-slate-700">{s.name}</span><span className="text-slate-500">{pct}%</span></div>
-            <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden"><div className="h-full" style={{ width: `${pct}%`, background: '#14B8A6' }} /></div>
-          </div>
-        )
-      })}
+      {/* Row: 2 charts */}
+      <div className="grid lg:grid-cols-2 gap-4">
+        <Card className="p-5">
+          <h3 className="font-bold">Overall % Completion</h3>
+          <p className="text-xs text-slate-500 mb-2">Per-subject syllabus coverage</p>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={completion} layout="vertical" margin={{ left: 10 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
+              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={70} />
+              <RTooltip formatter={(v) => `${v}%`} labelFormatter={(l, p) => p?.[0]?.payload?.full || l} />
+              <Bar dataKey="pct" fill="#FF7A18" radius={[0, 4, 4, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-5">
+          <h3 className="font-bold">Resonance Score</h3>
+          <p className="text-xs text-slate-500 mb-2">Completion + revision + study-time blend per subject</p>
+          {resonance.every((r) => r.score === 0) ? (
+            <div className="h-72 flex items-center justify-center text-sm text-slate-400">Start studying to see your resonance.</div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <RadarChart data={resonance}>
+                <PolarGrid />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
+                <PolarRadiusAxis domain={[0, 100]} tick={{ fontSize: 9 }} />
+                <Radar dataKey="score" stroke="#1A1A1A" fill="#FF7A18" fillOpacity={0.5} />
+              </RadarChart>
+            </ResponsiveContainer>
+          )}
+        </Card>
+      </div>
     </div>
   )
 }
@@ -939,7 +1131,7 @@ function CommunityPage({ user, activeBranch }) {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-slate-500 bg-slate-100 mb-2">👥 COMPETE · LEARN · GROW</div>
-      <h1 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">{activeBranch.branchCode} Community</h1>
+      <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">{activeBranch.branchCode} Community</h1>
       <p className="text-slate-500 mt-1">Ask doubts, answer peers, climb the leaderboard.</p>
 
       <Tabs value={tab} onValueChange={setTab} className="mt-5">
@@ -951,22 +1143,22 @@ function CommunityPage({ user, activeBranch }) {
           <div className="grid lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-3">
               <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild><Button className="bg-[#0D1B2E] hover:bg-[#142236]"><Plus className="w-4 h-4 mr-1" />Ask a doubt</Button></DialogTrigger>
+                <DialogTrigger asChild><Button className="bg-[#1A1A1A] hover:bg-[#2A2A2A]"><Plus className="w-4 h-4 mr-1" />Ask a doubt</Button></DialogTrigger>
                 <DialogContent>
                   <DialogHeader><DialogTitle>Ask a doubt</DialogTitle></DialogHeader>
                   <Input placeholder="Title (e.g. Why does Dijkstra fail with negative edges?)" value={title} onChange={(e) => setTitle(e.target.value)} />
                   <textarea className="w-full border rounded p-2 text-sm" rows={4} placeholder="Describe your question..." value={content} onChange={(e) => setContent(e.target.value)} />
-                  <DialogFooter><Button onClick={submit} className="bg-[#0D1B2E]">Post</Button></DialogFooter>
+                  <DialogFooter><Button onClick={submit} className="bg-[#1A1A1A]">Post</Button></DialogFooter>
                 </DialogContent>
               </Dialog>
               {posts.length === 0 && <Card className="p-6 text-center text-slate-500">No posts yet. Be the first to ask!</Card>}
               {posts.map((p) => (
                 <Card key={p.id} className="p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-[#0D1B2E]">{p.branchCode}</Badge>
+                    <Badge className="bg-[#1A1A1A]">{p.branchCode}</Badge>
                     <Badge variant="outline">{p.type}</Badge>
                   </div>
-                  <div className="font-semibold text-[#0D1B2E]">{p.title}</div>
+                  <div className="font-semibold text-[#1A1A1A]">{p.title}</div>
                   {p.body && <p className="text-sm text-slate-600 mt-1 line-clamp-3">{p.body}</p>}
                   <div className="text-xs text-slate-500 mt-2">{p.username} · {new Date(p.createdAt).toLocaleString()}</div>
                 </Card>
@@ -985,7 +1177,7 @@ function CommunityPage({ user, activeBranch }) {
                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">🏆 Top this week</div>
                 {board.slice(0, 5).map((u, i) => (
                   <div key={u.username} className="flex items-center justify-between text-sm py-1">
-                    <span className={u.username === user.username ? 'font-bold text-[#0D1B2E]' : 'text-slate-700'}>#{i+1} {u.username}</span>
+                    <span className={u.username === user.username ? 'font-bold text-[#1A1A1A]' : 'text-slate-700'}>#{i+1} {u.username}</span>
                     <span className="text-slate-500">{u.xp} XP</span>
                   </div>
                 ))}
@@ -996,7 +1188,7 @@ function CommunityPage({ user, activeBranch }) {
         <TabsContent value="leaderboard" className="mt-4">
           <Card className="overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-[#0D1B2E] text-white text-left">
+              <thead className="bg-[#1A1A1A] text-white text-left">
                 <tr><th className="p-3">Rank</th><th className="p-3">Username</th><th className="p-3">XP</th><th className="p-3">Topics</th><th className="p-3">Streak</th><th className="p-3">Level</th></tr>
               </thead>
               <tbody>
@@ -1023,19 +1215,19 @@ function ResourcesPage({ activeBranch }) {
     <div className="container mx-auto px-4 py-6 space-y-8">
       <div>
         <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📚 CURATED BOOKS</div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#0D1B2E]">Best Handpicked Books ({activeBranch.branchCode})</h2>
+        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">Best Handpicked Books ({activeBranch.branchCode})</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
           {books.map((b, i) => (
             <Card key={i} className="p-4">
               <div className={`h-32 rounded-md bg-gradient-to-br ${gradients[i % 6]} flex items-center justify-center text-white text-center text-xs font-bold p-2`}>📖 {b.split(' — ')[0]}</div>
-              <div className="text-sm font-medium mt-2 line-clamp-2 text-[#0D1B2E]">{b}</div>
-              <a href="#" className="text-xs text-[#F5A623] font-semibold mt-1 inline-flex items-center gap-1">Buy on Amazon <ArrowUpRight className="w-3 h-3" /></a>
+              <div className="text-sm font-medium mt-2 line-clamp-2 text-[#1A1A1A]">{b}</div>
+              <a href="#" className="text-xs text-[#FFB547] font-semibold mt-1 inline-flex items-center gap-1">Buy on Amazon <ArrowUpRight className="w-3 h-3" /></a>
             </Card>
           ))}
         </div>
       </div>
       <div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#0D1B2E]">📄 Quick Revision Sheets</h2>
+        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">📄 Quick Revision Sheets</h2>
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
           {sheets.map((s, i) => (
             <a key={s} href="#" className={`rounded-xl p-4 bg-gradient-to-br ${gradients[i % 6]} text-white block hover:scale-[1.02] transition`}>
@@ -1047,16 +1239,16 @@ function ResourcesPage({ activeBranch }) {
         </div>
       </div>
       <div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#0D1B2E]">▷ Video Playlists</h2>
+        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">▷ Video Playlists</h2>
         <Card className="mt-4 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-[#0D1B2E] text-white text-left"><tr><th className="p-3">Subject</th><th className="p-3">GATE Wallah</th><th className="p-3">Unacademy</th></tr></thead>
+            <thead className="bg-[#1A1A1A] text-white text-left"><tr><th className="p-3">Subject</th><th className="p-3">GATE Wallah</th><th className="p-3">Unacademy</th></tr></thead>
             <tbody>
               {sheets.map((s) => (
                 <tr key={s} className="border-b last:border-0">
                   <td className="p-3 font-medium">{s}</td>
-                  <td className="p-3"><a href="#" className="text-[#F5A623] inline-flex items-center gap-1">GATE Wallah <ArrowUpRight className="w-3 h-3" /></a></td>
-                  <td className="p-3"><a href="#" className="text-[#F5A623] inline-flex items-center gap-1">Unacademy <ArrowUpRight className="w-3 h-3" /></a></td>
+                  <td className="p-3"><a href="#" className="text-[#FFB547] inline-flex items-center gap-1">GATE Wallah <ArrowUpRight className="w-3 h-3" /></a></td>
+                  <td className="p-3"><a href="#" className="text-[#FFB547] inline-flex items-center gap-1">Unacademy <ArrowUpRight className="w-3 h-3" /></a></td>
                 </tr>
               ))}
             </tbody>
@@ -1077,7 +1269,7 @@ function PYQsPage({ activeBranch }) {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📄 PYQS</div>
-      <h1 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">GATE {activeBranch.branchCode} — Previous Year Papers</h1>
+      <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">GATE {activeBranch.branchCode} — Previous Year Papers</h1>
       <p className="text-slate-500 mt-1">Official GATE {activeBranch.branchCode} papers. Tap a cover to open the PDF.</p>
       <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mt-5">
         {papers.map((p, i) => (
@@ -1088,7 +1280,7 @@ function PYQsPage({ activeBranch }) {
               <div className="text-sm opacity-80">Shift {p.shift}</div>
             </div>
             <div className="p-3 text-xs flex items-center justify-between">
-              <a href="#" className="text-[#F5A623] font-semibold inline-flex items-center gap-1">Open PDF <ArrowUpRight className="w-3 h-3" /></a>
+              <a href="#" className="text-[#FFB547] font-semibold inline-flex items-center gap-1">Open PDF <ArrowUpRight className="w-3 h-3" /></a>
               <span className="text-slate-400">{p.year === 2026 && p.shift === 1 ? '▷ Attempt in-app' : 'Attempt — coming soon'}</span>
             </div>
           </Card>
@@ -1102,7 +1294,7 @@ function MockTestsPage({ activeBranch }) {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📝 MOCK TESTS</div>
-      <h1 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">{activeBranch.branchCode} Full-Length Mocks</h1>
+      <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">{activeBranch.branchCode} Full-Length Mocks</h1>
       <p className="text-slate-500 mt-1">Real exam-style mocks — 65 questions, 180 min, MCQ + MSQ + NAT.</p>
       <div className="grid md:grid-cols-3 gap-4 mt-5">
         {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -1131,19 +1323,19 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
     <div className="container mx-auto px-4 py-6 space-y-6 max-w-3xl">
       <div>
         <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-slate-500 bg-slate-100 mb-2">⚙️ ACCOUNT</div>
-        <h1 className="font-serif-display text-3xl font-bold text-[#0D1B2E]">Settings &amp; Branches</h1>
+        <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">Settings &amp; Branches</h1>
       </div>
       <Card className="p-5">
         <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">USERNAME</div>
-        <div className="font-serif-display text-2xl font-bold text-[#0D1B2E] mt-1">{user.username}</div>
+        <div className="font-serif-display text-2xl font-bold text-[#1A1A1A] mt-1">{user.username}</div>
         <div className="text-sm text-slate-500 mt-1">Shared across all your branches.</div>
       </Card>
       <Card className="p-5">
         <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">YOUR BRANCHES</div>
         <div className="grid sm:grid-cols-2 gap-3">
           {user.branches.map((b) => (
-            <button key={b.branchCode} onClick={() => onSwitchBranch(b.branchCode)} className={`text-left p-4 rounded-xl border-2 transition ${b.branchCode === activeBranch.branchCode ? 'border-[#14B8A6] bg-[#F0FDFA]' : 'border-slate-200 hover:border-slate-300'}`}>
-              <div className="font-bold text-[#0D1B2E]">{b.branchCode}</div>
+            <button key={b.branchCode} onClick={() => onSwitchBranch(b.branchCode)} className={`text-left p-4 rounded-xl border-2 transition ${b.branchCode === activeBranch.branchCode ? 'border-[#FF7A18] bg-[#F0FDFA]' : 'border-slate-200 hover:border-slate-300'}`}>
+              <div className="font-bold text-[#1A1A1A]">{b.branchCode}</div>
               <div className="text-xs text-slate-500">{BRANCHES.find((x) => x.code === b.branchCode)?.short} · GATE {b.targetYear}</div>
               {b.branchCode === activeBranch.branchCode && <Badge className="mt-2 bg-green-100 text-green-700">✓ Active</Badge>}
               <div className="mt-2 text-xs text-slate-400">XP: {b.xp || 0} · Streak: {b.streak || 0}d · {(b.completedTopics || []).length} topics</div>
@@ -1172,7 +1364,7 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
                     </SelectContent>
                   </Select>
                 </div>
-                <DialogFooter><Button onClick={add} className="bg-[#0D1B2E]">Add</Button></DialogFooter>
+                <DialogFooter><Button onClick={add} className="bg-[#1A1A1A]">Add</Button></DialogFooter>
               </DialogContent>
             </Dialog>
           )}
@@ -1181,7 +1373,7 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
       <Card className="p-5">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-bold text-[#0D1B2E]">Sign out</div>
+            <div className="font-bold text-[#1A1A1A]">Sign out</div>
             <div className="text-sm text-slate-500">End this session.</div>
           </div>
           <Button onClick={onLogout} variant="outline"><LogOut className="w-4 h-4 mr-1" />Sign out</Button>
@@ -1247,11 +1439,12 @@ function App() {
   if (!user) return (<><Toaster richColors /><AuthScreen onAuth={handleAuth} /></>)
 
   return (
-    <div className="min-h-screen bg-[#F7F8FA]">
+    <div className="min-h-screen pb-bottom-nav">
       <Toaster richColors position="top-right" />
       <TopBar user={user} activeBranch={activeBranch} />
       <ActivityTicker />
       <NavBar user={user} page={page} setPage={setPage} activeBranch={activeBranch} onSwitchBranch={switchBranch} onLogout={logout} onAddBranch={addBranch} />
+      <main className="fade-up">
       {page === 'Home' && <HomePage user={user} activeBranch={activeBranch} snapshot={snapshot} heatmap={heatmap} onRefresh={refresh} setPage={setPage} />}
       {page === 'Weightage' && <WeightagePage user={user} activeBranch={activeBranch} />}
       {page === 'Progress' && <ProgressPage user={user} activeBranch={activeBranch} onRefresh={refresh} />}
@@ -1262,10 +1455,12 @@ function App() {
       {page === 'PYQs' && <PYQsPage activeBranch={activeBranch} />}
       {page === 'Mock Tests' && <MockTestsPage activeBranch={activeBranch} />}
       {page === 'Settings' && <SettingsPage user={user} activeBranch={activeBranch} onSwitchBranch={switchBranch} onAddBranch={addBranch} onLogout={logout} />}
+      </main>
 
-      <footer className="text-center py-8 text-xs text-slate-400 border-t mt-12">
-        © GatePlus — Discipline Se AIR Tak · Built with 15-year data analysis
+      <footer className="text-center py-8 text-xs text-[#6B5E52] mt-12">
+        © GatePlus — <span className="sunrise-text font-semibold">Discipline Se AIR Tak</span> · Crafted with elegance
       </footer>
+      <BottomNav page={page} setPage={setPage} />
     </div>
   )
 }
