@@ -17,13 +17,17 @@ import {
   ChevronDown, Plus, Play, Pause, RotateCcw, Check, Trophy, Users, Sparkles,
   TrendingUp, BarChart3, Search, GraduationCap, Headphones, Settings as SettingsIcon,
   LogOut, ArrowUpRight, Star, MessageSquare, FileText, Youtube, Video,
-  Quote, Megaphone,
+  Quote, Megaphone, Shield,
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RTooltip, ResponsiveContainer, LineChart, Line, Legend,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
 } from 'recharts'
+import {
+  AdminLoginForm, AdminFloatingBar, AdminAddBtn, AdminItemControls, CmsModal,
+  SCHEMAS, adminApi, getAdminToken, useCmsList,
+} from '@/components/AdminCMS'
 
 const CHART_COLORS = ['#FF7A18', '#FFB547', '#FFC857', '#A47148', '#FF6B6B', '#2BBF7E', '#1A1A1A', '#FFE5D0', '#F6A65A', '#D97706', '#8B5CF6', '#06B6D4']
 
@@ -60,7 +64,7 @@ const api = {
 }
 
 // =================== AUTH SCREEN ===================
-function AuthScreen({ onAuth }) {
+function AuthScreen({ onAuth, adminFormOpen, setAdminFormOpen, onAdminAuth }) {
   const [mode, setMode] = useState('signup')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -194,7 +198,18 @@ function AuthScreen({ onAuth }) {
             </button>
           </p>
           <p className="text-xs text-center text-slate-400 mt-4">🛡 Your data is secure and encrypted</p>
+          <div className="mt-4 text-center">
+            <button onClick={() => setAdminFormOpen(true)} className="text-xs text-[#A47148] hover:text-[#FF7A18] underline inline-flex items-center gap-1">
+              <Shield className="w-3 h-3" />Admin sign in
+            </button>
+          </div>
         </Card>
+        <Dialog open={!!adminFormOpen} onOpenChange={setAdminFormOpen}>
+          <DialogContent>
+            <DialogHeader><DialogTitle>Admin sign in</DialogTitle></DialogHeader>
+            <AdminLoginForm onAuth={onAdminAuth} onCancel={() => setAdminFormOpen(false)} />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   )
@@ -1264,105 +1279,154 @@ function CommunityPage({ user, activeBranch }) {
   )
 }
 
-// =================== RESOURCES / PYQS / MOCKS placeholders ===================
-function ResourcesPage({ activeBranch }) {
-  const sheets = ['General Aptitude Formula Sheet', 'Engineering Mathematics', 'Digital Logic', 'Computer Organization', 'Programming & DS', 'Compiler Design', 'Operating Systems', 'Databases', 'Computer Networks', 'Algorithms', 'Discrete Mathematics', 'Theory of Computation']
-  const books = ['Oswaal GATE General Aptitude & Engineering Mathematics', 'MadeEasy Last 17yrs PYQs — Reasoning & Aptitude', 'MadeEasy Last 24yrs PYQs — Engineering Mathematics', 'ACE Engineering Mathematics — Last 33 Yrs PYQs', 'GKP GATE Study Guide — CS & IT', 'MadeEasy CS — Last 30Yrs PYQs', 'ACE CS — Last 39Yrs PYQs', 'ACE Handbook — CS/IT']
-  const gradients = ['from-orange-400 to-pink-500', 'from-blue-500 to-cyan-400', 'from-emerald-500 to-teal-500', 'from-violet-500 to-purple-600', 'from-rose-500 to-red-500', 'from-amber-500 to-orange-600']
+// =================== RESOURCES / PYQS / MOCKS (CMS-driven) ===================
+function gradientFor(i) {
+  const g = ['from-orange-400 to-pink-500', 'from-blue-500 to-cyan-400', 'from-emerald-500 to-teal-500', 'from-violet-500 to-purple-600', 'from-rose-500 to-red-500', 'from-amber-500 to-orange-600']
+  return g[i % g.length]
+}
+
+function CmsCardGrid({ items, type, isAdmin, onEdit, onDelete, kind }) {
   return (
-    <div className="container mx-auto px-4 py-6 space-y-8">
-      <div>
-        <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📚 CURATED BOOKS</div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">Best Handpicked Books ({activeBranch.branchCode})</h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          {books.map((b, i) => (
-            <Card key={i} className="p-4">
-              <div className={`h-32 rounded-md bg-gradient-to-br ${gradients[i % 6]} flex items-center justify-center text-white text-center text-xs font-bold p-2`}>📖 {b.split(' — ')[0]}</div>
-              <div className="text-sm font-medium mt-2 line-clamp-2 text-[#1A1A1A]">{b}</div>
-              <a href="#" className="text-xs text-[#FFB547] font-semibold mt-1 inline-flex items-center gap-1">Buy on Amazon <ArrowUpRight className="w-3 h-3" /></a>
+    <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      {items.map((it, i) => (
+        <div key={it.id} className="card-luxe overflow-hidden relative group">
+          {isAdmin && <AdminItemControls onEdit={() => onEdit(it)} onDelete={() => onDelete(it.id)} />}
+          {it.coverUrl ? (
+            <img src={it.coverUrl} alt={it.title} className="w-full h-36 object-cover" />
+          ) : (
+            <div className={`h-36 bg-gradient-to-br ${gradientFor(i)} flex items-center justify-center text-white text-center text-xs font-bold p-2`}>
+              {kind === 'pyq' ? '📄' : kind === 'sheet' ? '📝' : kind === 'note' ? '📖' : kind === 'mock' ? '🧪' : '📚'} {it.title}
+            </div>
+          )}
+          <div className="p-3">
+            <div className="font-semibold text-sm text-[#1A1A1A] line-clamp-2">{it.title}</div>
+            {kind === 'pyq' && <div className="text-[11px] text-[#6B5E52] mt-1">GATE {it.year} · Shift {it.shift} · {it.branchCode}</div>}
+            {(kind === 'book') && it.author && <div className="text-[11px] text-[#6B5E52] mt-1">{it.author}</div>}
+            {(kind === 'sheet' || kind === 'note') && <div className="text-[11px] text-[#6B5E52] mt-1">{it.subject}{it.topic ? ` · ${it.topic}` : ''}</div>}
+            {kind === 'mock' && <div className="text-[11px] text-[#6B5E52] mt-1">{it.durationMinutes || 0} min · {it.questionCount || 0} Qs · {it.marks || 0} marks</div>}
+            <div className="flex gap-2 mt-2">
+              {it.amazonUrl && <a href={it.amazonUrl} target="_blank" rel="noreferrer" className="text-xs text-[#FF7A18] font-semibold">Buy ↗</a>}
+              {it.paperUrl && <a href={it.paperUrl} target="_blank" rel="noreferrer" className="text-xs text-[#FF7A18] font-semibold">Open PDF ↗</a>}
+              {it.solutionUrl && <a href={it.solutionUrl} target="_blank" rel="noreferrer" className="text-xs text-[#1A1A1A] font-semibold">Solution ↗</a>}
+              {it.pdfUrl && <a href={it.pdfUrl} target="_blank" rel="noreferrer" className="text-xs text-[#FF7A18] font-semibold">Open ↗</a>}
+              {kind === 'mock' && (it.status === 'live' ? <a href={it.paperUrl || '#'} className="text-xs text-[#FF7A18] font-semibold">▷ Start</a> : <span className="text-xs text-slate-400">Coming soon</span>)}
+            </div>
+          </div>
+        </div>
+      ))}
+      {items.length === 0 && <div className="col-span-full p-8 text-center text-[#A47148]">No items yet. {isAdmin && 'Click "+ Add" to create one.'}</div>}
+    </div>
+  )
+}
+
+function CmsSection({ title, badge, collection, kind, schema, activeBranch, isAdmin, filterByBranch = true }) {
+  const params = filterByBranch ? `?branchCode=${activeBranch.branchCode}` : ''
+  const { items, reload } = useCmsList(collection, params)
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const save = async (form) => {
+    const body = { ...form, branchCode: form.branchCode || activeBranch.branchCode }
+    const r = editing ? await adminApi.cms(collection, 'PATCH', body, editing.id) : await adminApi.cms(collection, 'POST', body)
+    if (r.error) { toast.error(r.error); return }
+    toast.success(editing ? 'Updated' : 'Added')
+    setEditing(null); reload()
+  }
+  const del = async (id) => { const r = await adminApi.cms(collection, 'DELETE', null, id); if (r.error) toast.error(r.error); else { toast.success('Deleted'); reload() } }
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          {badge && <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-1">{badge}</div>}
+          <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">{title}</h2>
+        </div>
+        {isAdmin && <AdminAddBtn onClick={() => { setEditing(null); setOpen(true) }} label="Add" />}
+      </div>
+      <CmsCardGrid items={items} isAdmin={isAdmin} kind={kind} onEdit={(it) => { setEditing(it); setOpen(true) }} onDelete={del} />
+      {isAdmin && (
+        <CmsModal open={open} onClose={() => { setOpen(false); setEditing(null) }} title={editing ? `Edit ${schema.title}` : `New ${schema.title}`} schema={schema.fields} initial={editing || { branchCode: activeBranch.branchCode }} onSave={save} folder={schema.folder} />
+      )}
+    </section>
+  )
+}
+
+function ResourcesPage({ activeBranch, isAdmin }) {
+  return (
+    <div className="container mx-auto px-4 py-6 space-y-10">
+      <CmsSection title={`Best Handpicked Books (${activeBranch.branchCode})`} badge="📚 CURATED BOOKS" collection="books" kind="book" schema={SCHEMAS.books} activeBranch={activeBranch} isAdmin={isAdmin} />
+      <CmsSection title="📄 Quick Revision Sheets" collection="revision_sheets" kind="sheet" schema={SCHEMAS.revision_sheets} activeBranch={activeBranch} isAdmin={isAdmin} />
+      <CmsSection title="📝 Short Notes" collection="short_notes" kind="note" schema={SCHEMAS.short_notes} activeBranch={activeBranch} isAdmin={isAdmin} />
+      <VideoPlaylistsSection activeBranch={activeBranch} isAdmin={isAdmin} />
+    </div>
+  )
+}
+
+function VideoPlaylistsSection({ activeBranch, isAdmin }) {
+  const { items, reload } = useCmsList('videos', `?branchCode=${activeBranch.branchCode}`)
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+  const save = async (form) => {
+    const body = { ...form, branchCode: form.branchCode || activeBranch.branchCode }
+    const r = editing ? await adminApi.cms('videos', 'PATCH', body, editing.id) : await adminApi.cms('videos', 'POST', body)
+    if (r.error) toast.error(r.error); else { toast.success(editing ? 'Updated' : 'Added'); setEditing(null); reload() }
+  }
+  const del = async (id) => { await adminApi.cms('videos', 'DELETE', null, id); toast.success('Deleted'); reload() }
+  // Group by subject
+  const grouped = {}
+  items.forEach((v) => { (grouped[v.subject || 'Other'] = grouped[v.subject || 'Other'] || []).push(v) })
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">▷ Video Playlists</h2>
+        {isAdmin && <AdminAddBtn onClick={() => { setEditing(null); setOpen(true) }} label="Add video" />}
+      </div>
+      {items.length === 0 ? (
+        <Card className="p-8 text-center text-[#A47148]">No videos yet. {isAdmin && 'Click "+ Add video" to create one.'}</Card>
+      ) : (
+        <div className="space-y-4">
+          {Object.entries(grouped).map(([subj, vids]) => (
+            <Card key={subj} className="card-luxe p-4">
+              <div className="font-semibold text-[#1A1A1A] mb-2">{subj}</div>
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-2">
+                {vids.map((v) => (
+                  <div key={v.id} className="relative group p-3 rounded-lg bg-[#FFF8EE] border border-[#FFE5D0]">
+                    {isAdmin && <AdminItemControls onEdit={() => { setEditing(v); setOpen(true) }} onDelete={() => del(v.id)} />}
+                    <div className="flex items-start gap-2">
+                      <Youtube className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <a href={v.youtubeUrl} target="_blank" rel="noreferrer" className="text-sm font-medium text-[#1A1A1A] hover:text-[#FF7A18] line-clamp-2">{v.title}</a>
+                        <div className="text-[11px] text-[#6B5E52]">{v.provider}{v.topic ? ` · ${v.topic}` : ''}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           ))}
         </div>
-      </div>
-      <div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">📄 Quick Revision Sheets</h2>
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
-          {sheets.map((s, i) => (
-            <a key={s} href="#" className={`rounded-xl p-4 bg-gradient-to-br ${gradients[i % 6]} text-white block hover:scale-[1.02] transition`}>
-              <div className="text-[10px] font-bold opacity-80">📄 QUICK REVISION</div>
-              <div className="font-bold mt-6">{s}</div>
-              <div className="text-xs opacity-80 mt-2 flex items-center gap-1">Open <ArrowUpRight className="w-3 h-3" /></div>
-            </a>
-          ))}
-        </div>
-      </div>
-      <div>
-        <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">▷ Video Playlists</h2>
-        <Card className="mt-4 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-[#1A1A1A] text-white text-left"><tr><th className="p-3">Subject</th><th className="p-3">GATE Wallah</th><th className="p-3">Unacademy</th></tr></thead>
-            <tbody>
-              {sheets.map((s) => (
-                <tr key={s} className="border-b last:border-0">
-                  <td className="p-3 font-medium">{s}</td>
-                  <td className="p-3"><a href="#" className="text-[#FFB547] inline-flex items-center gap-1">GATE Wallah <ArrowUpRight className="w-3 h-3" /></a></td>
-                  <td className="p-3"><a href="#" className="text-[#FFB547] inline-flex items-center gap-1">Unacademy <ArrowUpRight className="w-3 h-3" /></a></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </Card>
-      </div>
-    </div>
+      )}
+      {isAdmin && <CmsModal open={open} onClose={() => { setOpen(false); setEditing(null) }} title={editing ? 'Edit video' : 'New video'} schema={SCHEMAS.videos.fields} initial={editing || { branchCode: activeBranch.branchCode, provider: 'GATE Wallah' }} onSave={save} folder={SCHEMAS.videos.folder} />}
+    </section>
   )
 }
 
-function PYQsPage({ activeBranch }) {
-  const papers = []
-  for (let y = 2026; y >= 2010; y--) {
-    papers.push({ year: y, shift: 1 })
-    if (y >= 2022) papers.push({ year: y, shift: 2 })
-  }
-  const gradients = ['from-orange-400 to-pink-500', 'from-blue-500 to-cyan-400', 'from-emerald-500 to-teal-500', 'from-violet-500 to-purple-600', 'from-rose-500 to-red-500', 'from-amber-500 to-orange-600']
+function PYQsPage({ activeBranch, isAdmin }) {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📄 PYQS</div>
-      <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">GATE {activeBranch.branchCode} — Previous Year Papers</h1>
-      <p className="text-slate-500 mt-1">Official GATE {activeBranch.branchCode} papers. Tap a cover to open the PDF.</p>
-      <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-3 mt-5">
-        {papers.map((p, i) => (
-          <Card key={`${p.year}-${p.shift}`} className="overflow-hidden">
-            <div className={`p-5 bg-gradient-to-br ${gradients[i % 6]} text-white relative`}>
-              <div className="flex justify-between text-[10px] font-bold"><span>📄 OFFICIAL PDF</span><span>{activeBranch.branchCode}</span></div>
-              <div className="font-bold text-xl mt-10">GATE {p.year}</div>
-              <div className="text-sm opacity-80">Shift {p.shift}</div>
-            </div>
-            <div className="p-3 text-xs flex items-center justify-between">
-              <a href="#" className="text-[#FFB547] font-semibold inline-flex items-center gap-1">Open PDF <ArrowUpRight className="w-3 h-3" /></a>
-              <span className="text-slate-400">{p.year === 2026 && p.shift === 1 ? '▷ Attempt in-app' : 'Attempt — coming soon'}</span>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A] mb-1">GATE {activeBranch.branchCode} — Previous Year Papers</h1>
+      <p className="text-slate-500 mb-6">Official GATE {activeBranch.branchCode} papers. Tap a cover to open the PDF.</p>
+      <CmsSection title="" collection="pyqs" kind="pyq" schema={SCHEMAS.pyqs} activeBranch={activeBranch} isAdmin={isAdmin} />
     </div>
   )
 }
 
-function MockTestsPage({ activeBranch }) {
+function MockTestsPage({ activeBranch, isAdmin }) {
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="inline-block px-2 py-1 rounded text-[11px] font-bold text-amber-700 bg-amber-100 mb-2">📝 MOCK TESTS</div>
-      <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A]">{activeBranch.branchCode} Full-Length Mocks</h1>
-      <p className="text-slate-500 mt-1">Real exam-style mocks — 65 questions, 180 min, MCQ + MSQ + NAT.</p>
-      <div className="grid md:grid-cols-3 gap-4 mt-5">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <Card key={i} className="p-5">
-            <div className="font-bold">GATE {activeBranch.branchCode} 2026 — Mock {i}</div>
-            <div className="text-xs text-slate-500 mt-1">180 min · 65 Qs · 100 marks</div>
-            <Button variant="outline" className="mt-3 w-full" disabled>Coming soon</Button>
-          </Card>
-        ))}
-      </div>
+      <h1 className="font-serif-display text-3xl font-bold text-[#1A1A1A] mb-1">{activeBranch.branchCode} Full-Length Mocks</h1>
+      <p className="text-slate-500 mb-6">Real exam-style mocks — MCQ + MSQ + NAT.</p>
+      <CmsSection title="" collection="mock_tests" kind="mock" schema={SCHEMAS.mock_tests} activeBranch={activeBranch} isAdmin={isAdmin} />
     </div>
   )
 }
@@ -1448,7 +1512,10 @@ function App() {
   const [snapshot, setSnapshot] = useState({})
   const [heatmap, setHeatmap] = useState({})
   const [loaded, setLoaded] = useState(false)
+  const [adminUser, setAdminUser] = useState(null)
+  const [adminFormOpen, setAdminFormOpen] = useState(false)
 
+  const isAdmin = !!adminUser
   const activeBranch = useMemo(() => user?.branches?.find((b) => b.isActive) || user?.branches?.[0], [user])
 
   const refresh = async () => {
@@ -1470,6 +1537,10 @@ function App() {
     } else {
       setLoaded(true)
     }
+    // Check admin session
+    if (typeof window !== 'undefined' && sessionStorage.getItem('gp_admin_token')) {
+      adminApi.me().then((r) => { if (r.admin) setAdminUser(r.admin) })
+    }
   }, [])
 
   useEffect(() => {
@@ -1484,17 +1555,36 @@ function App() {
     setUser(u)
   }
   const logout = () => { localStorage.removeItem('gp_user_id'); setUser(null) }
-  const switchBranch = async (code) => {
-    await api.switchBranch({ userId: user.id, branchCode: code })
-    await refresh()
-  }
-  const addBranch = async (code, year) => {
-    await api.addBranch({ userId: user.id, branchCode: code, targetYear: year })
-    await refresh()
-  }
+  const adminLogout = () => { sessionStorage.removeItem('gp_admin_token'); setAdminUser(null); toast.success('Exited admin mode') }
+  const switchBranch = async (code) => { await api.switchBranch({ userId: user.id, branchCode: code }); await refresh() }
+  const addBranch = async (code, year) => { await api.addBranch({ userId: user.id, branchCode: code, targetYear: year }); await refresh() }
 
   if (!loaded) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading…</div>
-  if (!user) return (<><Toaster richColors /><AuthScreen onAuth={handleAuth} /></>)
+  if (!user && !isAdmin) {
+    return (
+      <>
+        <Toaster richColors />
+        <AuthScreen onAuth={handleAuth} adminFormOpen={adminFormOpen} setAdminFormOpen={setAdminFormOpen} onAdminAuth={(a) => { setAdminUser(a); setAdminFormOpen(false) }} />
+      </>
+    )
+  }
+  // If admin logged in without a student account, sign in as the test student or show a notice
+  if (!user && isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Toaster richColors />
+        <Card className="card-luxe p-8 max-w-md text-center">
+          <Shield className="w-10 h-10 mx-auto text-[#FF7A18] mb-3" />
+          <h2 className="font-serif-display text-2xl font-bold">Admin mode is active</h2>
+          <p className="text-sm text-[#6B5E52] mt-2">Sign in or create a student account to browse the site with admin edit controls visible.</p>
+          <div className="mt-4 flex gap-2 justify-center">
+            <Button onClick={() => setAdminUser(null)} variant="outline">Exit admin mode</Button>
+            <Button onClick={() => { sessionStorage.removeItem('gp_admin_token'); setAdminUser(null); }} className="btn-sunrise">Continue as student</Button>
+          </div>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen pb-bottom-nav">
@@ -1510,16 +1600,29 @@ function App() {
       {page === 'Revision' && <RevisionPage user={user} activeBranch={activeBranch} onRefresh={refresh} />}
       {page === 'Dashboard' && <DashboardPage user={user} activeBranch={activeBranch} snapshot={snapshot} />}
       {page === 'Community' && <CommunityPage user={user} activeBranch={activeBranch} />}
-      {page === 'Resources' && <ResourcesPage activeBranch={activeBranch} />}
-      {page === 'PYQs' && <PYQsPage activeBranch={activeBranch} />}
-      {page === 'Mock Tests' && <MockTestsPage activeBranch={activeBranch} />}
+      {page === 'Resources' && <ResourcesPage activeBranch={activeBranch} isAdmin={isAdmin} />}
+      {page === 'PYQs' && <PYQsPage activeBranch={activeBranch} isAdmin={isAdmin} />}
+      {page === 'Mock Tests' && <MockTestsPage activeBranch={activeBranch} isAdmin={isAdmin} />}
       {page === 'Settings' && <SettingsPage user={user} activeBranch={activeBranch} onSwitchBranch={switchBranch} onAddBranch={addBranch} onLogout={logout} />}
       </main>
 
       <footer className="text-center py-8 text-xs text-[#6B5E52] mt-12">
         © GatePlus — <span className="sunrise-text font-semibold">Discipline Se AIR Tak</span> · Crafted with elegance
+        {!isAdmin && (
+          <div className="mt-2">
+            <button onClick={() => setAdminFormOpen(true)} className="text-[#A47148] hover:text-[#FF7A18] text-xs underline">Admin sign in</button>
+          </div>
+        )}
       </footer>
       <BottomNav page={page} setPage={setPage} />
+      <AdminFloatingBar admin={adminUser} onLogout={adminLogout} />
+      {/* Admin login modal opened from auth screen or footer */}
+      <Dialog open={adminFormOpen && !!user} onOpenChange={setAdminFormOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Enter Admin Mode</DialogTitle></DialogHeader>
+          <AdminLoginForm onAuth={(a) => { setAdminUser(a); setAdminFormOpen(false) }} onCancel={() => setAdminFormOpen(false)} />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

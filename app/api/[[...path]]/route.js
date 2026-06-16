@@ -855,6 +855,122 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ videos: list.map(({ _id, ...r }) => r) }))
     }
 
+    // ============ CLOUDINARY UPLOAD SIGNATURE ============
+    if (route === '/admin/upload-signature' && method === 'POST') {
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      if (!rateLimit(clientKey(request, 'upload-sig'), 60, 60000)) return handleCORS(NextResponse.json({ error: 'Rate limit' }, { status: 429 }))
+      const body = await request.json().catch(() => ({}))
+      const folder = sanitizeString(body.folder || 'gateplus/general', 80).replace(/[^a-zA-Z0-9/_-]/g, '')
+      const resourceType = ['image', 'auto', 'raw'].includes(body.resourceType) ? body.resourceType : 'auto'
+      const timestamp = Math.floor(Date.now() / 1000)
+      const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+      const apiKey = process.env.CLOUDINARY_API_KEY
+      const apiSecret = process.env.CLOUDINARY_API_SECRET
+      if (!cloudName || !apiKey || !apiSecret) {
+        return handleCORS(NextResponse.json({ error: 'Cloudinary not configured' }, { status: 500 }))
+      }
+      // Sign: sort params + apiSecret, sha1
+      const params = { folder, timestamp }
+      const toSign = Object.keys(params).sort().map((k) => `${k}=${params[k]}`).join('&')
+      const signature = crypto.createHash('sha1').update(toSign + apiSecret).digest('hex')
+      await logAudit(db, admin.id, 'upload.sign', null, { folder, resourceType })
+      return handleCORS(NextResponse.json({
+        cloudName, apiKey, timestamp, signature, folder, resourceType,
+        uploadUrl: `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+      }))
+    }
+
+    // ============ GENERIC CMS COLLECTIONS ============
+    // Allowed CMS collections (whitelist for safety)
+    const CMS_COLLECTIONS = {
+      books: { fields: ['branchCode', 'title', 'author', 'amazonUrl', 'coverUrl'] },
+      pyqs: { fields: ['branchCode', 'year', 'shift', 'title', 'paperUrl', 'solutionUrl', 'coverUrl'] },
+      revision_sheets: { fields: ['branchCode', 'subjectKey', 'subject', 'topic', 'title', 'pdfUrl', 'coverUrl'] },
+      short_notes: { fields: ['branchCode', 'subjectKey', 'subject', 'topic', 'title', 'pdfUrl', 'coverUrl'] },
+      videos: { fields: ['branchCode', 'subjectKey', 'subject', 'topic', 'title', 'youtubeUrl', 'provider', 'featured', 'pinned'] },
+      mock_tests: { fields: ['branchCode', 'title', 'durationMinutes', 'questionCount', 'marks', 'status', 'coverUrl', 'paperUrl'] },
+      settings: { fields: ['key', 'value'], singletonByKey: true },
+    }
+
+    function buildCmsItem(collKey, body, existing = null) {
+      const conf = CMS_COLLECTIONS[collKey]
+      const item = existing ? { ...existing } : { id: uuidv4(), createdAt: new Date().toISOString() }
+      conf.fields.forEach((f) => {
+        if (body[f] !== undefined) {
+          if (typeof body[f] === 'string') item[f] = sanitizeString(body[f], 2000)
+          else if (typeof body[f] === 'number') item[f] = body[f]
+          else if (typeof body[f] === 'boolean') item[f] = !!body[f]
+          else item[f] = body[f]
+        }
+      })
+      item.updatedAt = new Date().toISOString()
+      return item
+    }
+
+    // PUBLIC list (no auth): GET /cms/:coll
+    const publicMatch = route.match(/^\/cms\/([a-z_]+)$/)
+    if (publicMatch && method === 'GET') {
+      const collKey = publicMatch[1]
+      if (!CMS_COLLECTIONS[collKey]) return handleCORS(NextResponse.json({ error: 'Unknown collection' }, { status: 404 }))
+      const filter = {}
+      for (const f of ['branchCode', 'subjectKey', 'topic', 'year']) {
+        const v = url.searchParams.get(f)
+        if (v) filter[f] = isNaN(Number(v)) || f !== 'year' ? v : Number(v)
+      }
+      const items = await db.collection(`cms_${collKey}`).find(filter).sort({ pinned: -1, featured: -1, createdAt: -1 }).limit(500).toArray()
+      return handleCORS(NextResponse.json({ items: items.map(({ _id, ...r }) => r) }))
+    }
+
+    // ADMIN CRUD: POST/PATCH/DELETE /admin/cms/:coll[/:id]
+    const adminMatch = route.match(/^\/admin\/cms\/([a-z_]+)(?:\/([^/]+))?$/)
+    if (adminMatch) {
+      const collKey = adminMatch[1]
+      const itemId = adminMatch[2]
+      if (!CMS_COLLECTIONS[collKey]) return handleCORS(NextResponse.json({ error: 'Unknown collection' }, { status: 404 }))
+      const admin = await requireAdmin(request, db); if (!admin) return handleCORS(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }))
+      const coll = db.collection(`cms_${collKey}`)
+      if (method === 'GET') {
+        const items = await coll.find({}).sort({ createdAt: -1 }).limit(1000).toArray()
+        return handleCORS(NextResponse.json({ items: items.map(({ _id, ...r }) => r) }))
+      }
+      if (method === 'POST') {
+        const body = await request.json().catch(() => ({}))
+        const item = buildCmsItem(collKey, body)
+        // settings singleton by key
+        if (CMS_COLLECTIONS[collKey].singletonByKey && item.key) {
+          await coll.updateOne({ key: item.key }, { $set: item }, { upsert: true })
+          await logAudit(db, admin.id, `cms.${collKey}.upsert`, item.key, item)
+          return handleCORS(NextResponse.json({ item }))
+        }
+        await coll.insertOne(item)
+        await logAudit(db, admin.id, `cms.${collKey}.create`, item.id)
+        return handleCORS(NextResponse.json({ item }))
+      }
+      if (method === 'PATCH' && itemId) {
+        const body = await request.json().catch(() => ({}))
+        const existing = await coll.findOne({ id: itemId })
+        if (!existing) return handleCORS(NextResponse.json({ error: 'Not found' }, { status: 404 }))
+        const item = buildCmsItem(collKey, body, existing)
+        delete item._id
+        await coll.updateOne({ id: itemId }, { $set: item })
+        await logAudit(db, admin.id, `cms.${collKey}.update`, itemId)
+        return handleCORS(NextResponse.json({ item }))
+      }
+      if (method === 'DELETE' && itemId) {
+        await coll.deleteOne({ id: itemId })
+        await logAudit(db, admin.id, `cms.${collKey}.delete`, itemId)
+        return handleCORS(NextResponse.json({ ok: true }))
+      }
+    }
+
+    // PUBLIC SETTINGS singleton: GET /cms/settings/:key
+    const settingMatch = route.match(/^\/cms\/settings\/([a-zA-Z0-9_-]+)$/)
+    if (settingMatch && method === 'GET') {
+      const key = settingMatch[1]
+      const row = await db.collection('cms_settings').findOne({ key })
+      return handleCORS(NextResponse.json({ value: row?.value ?? null }))
+    }
+
     return handleCORS(NextResponse.json({ error: `Route ${route} not found` }, { status: 404 }))
   } catch (error) {
     console.error('API Error:', error)
