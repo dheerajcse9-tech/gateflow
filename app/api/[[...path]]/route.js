@@ -279,6 +279,67 @@ async function handleRoute(request, { params }) {
       return handleCORS(NextResponse.json({ user: sanitizeUser(user), token }))
     }
 
+    if (route === '/auth/google' && method === 'POST') {
+      const body = await request.json().catch(() => ({}))
+      const { credential } = body
+      if (!credential) {
+        return handleCORS(NextResponse.json({ error: 'Missing credential token.' }, { status: 400 }))
+      }
+      try {
+        const { OAuth2Client } = require('google-auth-library')
+        const clientId = process.env.GOOGLE_CLIENT_ID || '148149511115-kgdjutjp7dprqq1cvqlec5l5r45vat2r.apps.googleusercontent.com'
+        const client = new OAuth2Client(clientId)
+        const ticket = await client.verifyIdToken({
+          idToken: credential,
+          audience: clientId,
+        })
+        const payload = ticket.getPayload()
+        if (!payload || !payload.email) {
+          return handleCORS(NextResponse.json({ error: 'Invalid token payload.' }, { status: 400 }))
+        }
+        const email = payload.email.toLowerCase().trim()
+        const name = payload.name || email.split('@')[0]
+        let user = await db.collection('users').findOne({ email })
+        if (!user) {
+          const branchCode = 'CS'
+          const targetYear = 2027
+          const username = name.replace(/\s+/g, '_') + '_' + Math.floor(100 + Math.random() * 900)
+          user = {
+            id: uuidv4(),
+            email,
+            username,
+            passwordSalt: null,
+            passwordHash: null,
+            createdAt: new Date().toISOString(),
+            dailyGoalMinutes: 360,
+            totalActiveDays: 0,
+            suspended: false,
+            loginAttempts: 0,
+            lockUntil: null,
+            branches: [
+              {
+                branchCode,
+                targetYear,
+                xp: 0, level: 1, streak: 0, maxStreak: 0,
+                lastActiveDate: null,
+                completedTopics: [], revisedTopics: [],
+                isActive: true,
+              },
+            ],
+          }
+          await db.collection('users').insertOne(user)
+        }
+        if (user.suspended) {
+          return handleCORS(NextResponse.json({ error: 'Your account has been suspended. Contact support.' }, { status: 403 }))
+        }
+        const token = signToken({ userId: user.id }, USER_SECRET, 60 * 60 * 24 * 7)
+        return handleCORS(NextResponse.json({ user: sanitizeUser(user), token }))
+      } catch (err) {
+        console.error('Google verification error:', err)
+        return handleCORS(NextResponse.json({ error: 'Google authentication failed. Please try again.' }, { status: 401 }))
+      }
+    }
+
     if (route === '/auth/login' && method === 'POST') {
       if (!rateLimit(clientKey(request, 'login'), 8, 60000)) {
         return handleCORS(NextResponse.json({ error: 'Too many attempts. Please wait a minute.' }, { status: 429 }))

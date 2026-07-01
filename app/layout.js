@@ -7,8 +7,8 @@ const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfa
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' })
 
 export const metadata = {
-  title: 'GatePlus — Crack GATE with Consistency',
-  description: 'Track study hours, topics, streaks, XP. Discipline Se AIR Tak.',
+  title: 'GateFlow — Your Complete GATE CS Preparation System',
+  description: 'Resources, PYQs, Revision Notes, Mock Tests, and Progress Tracking in one place.',
 }
 
 export default function RootLayout({ children }) {
