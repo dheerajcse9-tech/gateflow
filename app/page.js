@@ -2765,74 +2765,107 @@ const GFG_NOTES = [
     color: '#7C3AED',
     bg: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
     icon: '∑',
+
     sections: [
       {
-        name: 'Mathematical Logic',
+        name: 'Linear Algebra',
         topics: [
-          { name: 'Propositional and First Order Logic', url: 'https://www.geeksforgeeks.org/mathematical-logic-propositional-equivalences/' },
-          { name: 'Predicates and Quantifiers', url: 'https://www.geeksforgeeks.org/mathematic-logic-predicates-and-quantifiers-set-1/' },
-          { name: 'Rules of Inference', url: 'https://www.geeksforgeeks.org/mathematical-logic-rules-of-inference/' },
-        ],
-      },
-      {
-        name: 'Set Theory & Algebra',
-        topics: [
-          { name: 'Set Theory Basics', url: 'https://www.geeksforgeeks.org/set-theory/' },
-          { name: 'Relations', url: 'https://www.geeksforgeeks.org/relations-in-set-theory/' },
-          { name: 'Functions', url: 'https://www.geeksforgeeks.org/types-of-functions/' },
-          { name: 'Groups', url: 'https://www.geeksforgeeks.org/groups-in-mathematics/' },
-          { name: 'Lattices', url: 'https://www.geeksforgeeks.org/lattices-in-discrete-mathematics/' },
-          { name: 'Boolean Algebra', url: 'https://www.geeksforgeeks.org/boolean-algebra/' },
-        ],
-      },
-      {
-        name: 'Combinatorics',
-        topics: [
-          { name: 'Counting Principles', url: 'https://www.geeksforgeeks.org/counting-principle-in-maths/' },
-          { name: 'Permutations & Combinations', url: 'https://www.geeksforgeeks.org/permutation-and-combination/' },
-          { name: 'Pigeonhole Principle', url: 'https://www.geeksforgeeks.org/discrete-mathematics-the-pigeonhole-principle/' },
-          { name: 'Recurrence Relations', url: 'https://www.geeksforgeeks.org/recurrence-relations-discrete-mathematics/' },
+          { name: 'Introduction to Matrix', url: 'https://www.geeksforgeeks.org/maths/introduction-to-matrices/' },
+          { name: 'Different Operations on matrices', url: 'https://www.geeksforgeeks.org/maths/matrix-operations/' },
+          { name: 'Determinants', url: 'https://www.geeksforgeeks.org/maths/what-is-determinant-of-a-matrix/' },
+          { name: 'Properties of Determinants', url: 'https://www.geeksforgeeks.org/engineering-mathematics/properties-of-determinants-of-matrices/' },
+          { name: 'Rank of a Matrix', url: 'https://www.geeksforgeeks.org/maths/rank-of-matrix/' },
+          { name: 'Row Echelon Form', url: 'https://www.geeksforgeeks.org/machine-learning/row-echelon-form/' },
+          { name: 'LU Decomposition', url: 'https://www.geeksforgeeks.org/engineering-mathematics/l-u-decomposition-system-linear-equations/' },
+          { name: 'Null Space and Nullity of a Matrix', url: 'https://www.geeksforgeeks.org/machine-learning/null-space-and-nullity-of-a-matrix/' },
+          { name: 'System of Linear Equations', url: 'https://www.geeksforgeeks.org/engineering-mathematics/system-linear-equations/' },
+          { name: 'Eigenvalues and Eigenvectors', url: 'https://www.geeksforgeeks.org/engineering-mathematics/eigen-values/' },
+          { name: 'Matrix Diagonalization', url: 'https://www.geeksforgeeks.org/dsa/matrix-diagonalization/' },
+          { name: 'Cayley Hamilton Theorem', url: 'https://www.geeksforgeeks.org/maths/cayley-hamilton-theorem/' },
         ],
       },
       {
         name: 'Probability',
         topics: [
-          { name: 'Probability Basics', url: 'https://www.geeksforgeeks.org/mathematics-probability/' },
-          { name: 'Conditional Probability', url: 'https://www.geeksforgeeks.org/conditional-probability/' },
-          { name: "Bayes' Theorem", url: 'https://www.geeksforgeeks.org/bayes-theorem/' },
-          { name: 'Random Variables', url: 'https://www.geeksforgeeks.org/random-variable/' },
-          { name: 'Probability Distributions', url: 'https://www.geeksforgeeks.org/probability-distribution/' },
-          { name: 'Mean, Median, Mode', url: 'https://www.geeksforgeeks.org/mean-median-mode/' },
-        ],
-      },
-      {
-        name: 'Linear Algebra',
-        topics: [
-          { name: 'Matrices', url: 'https://www.geeksforgeeks.org/matrix/' },
-          { name: 'Determinants', url: 'https://www.geeksforgeeks.org/determinant-of-a-matrix/' },
-          { name: 'System of Linear Equations', url: 'https://www.geeksforgeeks.org/system-of-linear-equations/' },
-          { name: 'Eigenvalues & Eigenvectors', url: 'https://www.geeksforgeeks.org/eigen-values-and-eigen-vectors/' },
-          { name: 'Rank of a Matrix', url: 'https://www.geeksforgeeks.org/rank-of-a-matrix/' },
+          { name: 'Introduction to Probability', url: 'https://www.geeksforgeeks.org/maths/basic-concepts-of-probability//' },
+          { name: 'Random Variable', url: 'https://www.geeksforgeeks.org/engineering-mathematics/random-variable/' },
+          { name: 'Mean, Variance, and Standard Deviation', url: 'https://www.geeksforgeeks.org/maths/standard-deviation-formula/' },
+          { name: 'Law of Total Probability', url: 'https://www.geeksforgeeks.org/maths/mathematics-law-of-total-probability/' },
+          { name: 'Conditional Probability', url: 'https://www.geeksforgeeks.org/maths/conditional-probability/' },
+          { name: 'Bayes’s Formula for Conditional Probability', url: 'https://www.geeksforgeeks.org/maths/bayes-theorem/' },
+          { name: 'Probability Distribution', url: 'https://www.geeksforgeeks.org/maths/probability-distribution/' },
+          { name: 'Uniform Distribution', url: 'https://www.geeksforgeeks.org/maths/uniform-distribution-formula/' },
+          { name: 'Exponential Distribution', url: 'https://www.geeksforgeeks.org/data-science/probability-distributions-exponential-distribution/' },
+          { name: 'Normal Distribution', url: 'https://www.geeksforgeeks.org/maths/normal-distribution/' },
+          { name: 'Binomial Distribution', url: 'https://www.geeksforgeeks.org/maths/binomial-distribution/' },
+          { name: 'Poisson Distribution', url: 'https://www.geeksforgeeks.org/maths/poisson-distribution/' },
+          { name: 'Covariance and Correlation', url: 'https://www.geeksforgeeks.org/data-analysis/mathematics-covariance-and-correlation/' },
+
         ],
       },
       {
         name: 'Calculus',
         topics: [
-          { name: 'Limits & Continuity', url: 'https://www.geeksforgeeks.org/limits-continuity-and-differentiability/' },
-          { name: 'Differentiation', url: 'https://www.geeksforgeeks.org/differentiation/' },
-          { name: 'Integration', url: 'https://www.geeksforgeeks.org/integration/' },
-          { name: 'Maxima and Minima', url: 'https://www.geeksforgeeks.org/maxima-and-minima/' },
-          { name: 'Mean Value Theorems', url: 'https://www.geeksforgeeks.org/mean-value-theorem/' },
+          { name: 'Limits, Continuity and Differentiability', url: 'https://www.geeksforgeeks.org/maths/differentiability-of-a-function-class-12-maths/' },
+{ name: 'Indeterminate Forms', url: 'https://www.geeksforgeeks.org/maths/differentiability-of-a-function-class-12-maths/' },
+{ name: 'Logarithmic Differentiation', url: 'https://www.geeksforgeeks.org/maths/logarithmic-differentiation/' },
+{ name: 'Lagrange’s Mean Value Theorem', url: 'https://www.geeksforgeeks.org/engineering-mathematics/lagranges-mean-value-theorem/' },
+{ name: 'Rolle’s Mean Value Theorem', url: 'https://www.geeksforgeeks.org/engineering-mathematics/rolles-theorem/' },
+{ name: 'Cauchy’s Mean Value Theorem', url: 'https://www.geeksforgeeks.org/engineering-mathematics/cauchys-mean-value-theorem/' },
+{ name: "Taylor's Theorem and Taylor Series", url: 'https://www.geeksforgeeks.org/engineering-mathematics/taylor-series/' },
+{ name: 'Maclaurin Series', url: 'https://www.geeksforgeeks.org/engineering-mathematics/maclaurin-series/' },
+{ name: "Euler's Formula", url: 'https://www.geeksforgeeks.org/maths/eulers-formula/' },
+{ name: 'Chain Rule Derivative', url: 'https://www.geeksforgeeks.org/maths/chain-rule-formula/' },
+{ name: 'Indefinite Integrals', url: 'https://www.geeksforgeeks.org/maths/indefinite-integrals/' },
+{ name: 'Finding the Various nth Term of any Polynomial Sequence', url: 'https://www.geeksforgeeks.org/dsa/finding-nth-term-polynomial-sequence/' },
+{ name: 'Application of Derivative', url: 'https://www.geeksforgeeks.org/maths/application-of-derivatives/' },
+{ name: 'Absolute Minima and Maxima', url: 'https://www.geeksforgeeks.org/maths/absolute-minima-and-maxima/' },
+{ name: 'Sequence and Series', url: 'https://www.geeksforgeeks.org/maths/sequences-and-series/' },
+{ name: 'Summation Formula', url: 'https://www.geeksforgeeks.org/maths/summation-formula/' },
+        ],
+      },
+      {
+        name: 'Propositional and First-Order Logic',
+        topics: [
+          { name: 'Introduction to Propositional Logic', url: 'https://www.geeksforgeeks.org/engineering-mathematics/proposition-logic/' },
+{ name: 'Proposition Laws and Algebra', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematical-logic-introduction-propositional-logic-set-2/' },
+{ name: 'Propositional Equivalence', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematical-logic-propositional-equivalences/' },
+{ name: 'Predicates and Quantifiers Set 1', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematic-logic-predicates-quantifiers/' },
+{ name: 'Predicates and Quantifiers Set 2', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematical-logic-predicates-quantifiers-set-2/' },
+{ name: 'Some Theorems on Nested Quantifiers', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematics-theorems-nested-quantifiers/' },
+{ name: 'Rules of Inference', url: 'https://www.geeksforgeeks.org/engineering-mathematics/rules-of-inference/' },
+{ name: 'Consensus Theorem', url: 'https://www.geeksforgeeks.org/digital-logic/consensus-theorem-in-digital-logic/' },
+        ],
+      },
+      {
+        name: 'Sets, Relations, Functions, Partial orders,and Lattices. Monoids, Groups',
+        topics: [
+          { name: 'Introduction to Set Theory', url: 'https://www.geeksforgeeks.org/maths/set-theory/' },
+          { name: 'Relations and their types', url: 'https://www.geeksforgeeks.org/maths/relation-in-maths/' },
+          { name: 'Groups', url: 'https://www.geeksforgeeks.org/maths/functions/' },
+          { name: 'Modular Addition', url: 'https://www.geeksforgeeks.org/engineering-mathematics/modular-addition/' },
+          { name: 'Partial Orders and Lattices', url: 'https://www.geeksforgeeks.org/engineering-mathematics/partial-orders-lattices/' },
+          { name: 'Hasse Diagrams', url: 'https://www.geeksforgeeks.org/engineering-mathematics/discrete-mathematics-hasse-diagrams/' },
+        ],
+      },
+      {
+        name: 'Combinatorics',
+        topics: [
+          { name: 'Combinatorics Basics', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematics-combinatorics-basics/' },
+          { name: 'Binomial Coefficients', url: 'https://www.geeksforgeeks.org/maths/coefficient-in-binomial-expansion/' },
+          { name: 'Principle of Inclusion and Exclusion', url: 'https://www.geeksforgeeks.org/maths/principle-of-inclusion-and-exclusion/' },
+          { name: 'Corollaries of Binomial Theorem', url: 'https://www.geeksforgeeks.org/maths/corollaries-binomial-theorem/' },
+          { name: 'Generating Functions', url: 'https://www.geeksforgeeks.org/engineering-mathematics/discrete-maths-generating-functions-introduction-prerequisites/' },
         ],
       },
       {
         name: 'Graph Theory',
         topics: [
-          { name: 'Graph Basics', url: 'https://www.geeksforgeeks.org/graph-types-and-applications/' },
-          { name: 'Trees', url: 'https://www.geeksforgeeks.org/introduction-to-tree-data-structure-and-algorithm-tutorials/' },
-          { name: 'Planar Graphs', url: 'https://www.geeksforgeeks.org/planar-graphs-and-graph-coloring/' },
-          { name: 'Graph Coloring', url: 'https://www.geeksforgeeks.org/graph-coloring-applications/' },
-          { name: 'Euler & Hamiltonian Paths', url: 'https://www.geeksforgeeks.org/eulerian-path-an-undirected-graph/' },
+          { name: 'Graph Theory Basics', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematics-graph-theory-basics/' },
+          { name: 'Number of Nodes and Height of a Binary Tree', url: 'https://www.geeksforgeeks.org/dsa/relationship-number-nodes-height-binary-tree/' },
+          { name: 'Planar Graphs and Graph Coloring', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematics-planar-graphs-graph-coloring/' },
+          { name: 'Independent Sets, Covering, and Matching', url: 'https://www.geeksforgeeks.org/engineering-mathematics/mathematics-independent-sets-covering-and-matching/' },
+          { name: 'Euler & Hamiltonian Paths', url: 'https://www.geeksforgeeks.org/engineering-mathematics/euler-hamiltonian-paths/' },
         ],
       },
     ],
@@ -2844,22 +2877,27 @@ const GFG_NOTES = [
     icon: '⊕',
     sections: [
       {
-        name: 'Number Systems & Codes',
+        name: 'Introduction of Boolean Algebra and Logic Gates',
         topics: [
-          { name: 'Number Systems', url: 'https://www.geeksforgeeks.org/number-system-in-maths/' },
-          { name: 'Binary Arithmetic', url: 'https://www.geeksforgeeks.org/binary-number-system/' },
-          { name: "Gray Code", url: 'https://www.geeksforgeeks.org/gray-to-binary-and-binary-to-gray-conversion/' },
-          { name: 'BCD, Excess-3, ASCII', url: 'https://www.geeksforgeeks.org/bcd-representation-of-numbers/' },
-          { name: "1's and 2's Complement", url: 'https://www.geeksforgeeks.org/ones-complement/' },
+          { name: 'Logic Gates', url: 'https://www.geeksforgeeks.org/digital-logic/introduction-of-logic-gates/' },
+          { name: 'Boolean Functions', url: 'https://www.geeksforgeeks.org/digital-logic/boolean-functions/' },
+          { name: "Canonical and Standard Form", url: 'https://www.geeksforgeeks.org/digital-logic/canonical-and-standard-form/' },
+          { name: 'Introduction of K-Map ', url: 'https://www.geeksforgeeks.org/digital-logic/introduction-of-k-map-karnaugh-map/' },
+          { name: "Consensus Theorem", url: 'https://www.geeksforgeeks.org/digital-logic/consensus-theorem-in-digital-logic/' },
         ],
       },
       {
-        name: 'Boolean Algebra',
+        name: 'Combinational Circuit',
         topics: [
-          { name: 'Boolean Algebra Laws', url: 'https://www.geeksforgeeks.org/boolean-algebra/' },
-          { name: 'Canonical Forms (SOP/POS)', url: 'https://www.geeksforgeeks.org/standard-forms-of-boolean-expressions/' },
-          { name: 'K-Map Simplification', url: 'https://www.geeksforgeeks.org/k-map-karnaugh-map/' },
-          { name: "Quine-McCluskey Method", url: 'https://www.geeksforgeeks.org/quine-mccluskey-method/' },
+          { name: 'Grey Code', url: 'https://www.geeksforgeeks.org/digital-logic/what-is-gray-code/' },
+          { name: 'Half Adder', url: 'https://www.geeksforgeeks.org/digital-logic/half-adder-in-digital-logic/' },
+          { name: 'Half Subtractor', url: 'https://www.geeksforgeeks.org/digital-logic/half-subtractor-in-digital-logic/' },
+          { name: "Encoders and Decoders", url: 'https://www.geeksforgeeks.org/digital-logic/encoders-and-decoders-in-digital-logic/' },
+          { name: 'Binary Decoder ', url: 'https://www.geeksforgeeks.org/digital-logic/binary-decoder-in-digital-logic/' },
+          { name: "Multiplexers", url: 'https://www.geeksforgeeks.org/digital-logic/multiplexers-in-digital-logic/' },
+          { name: "BCD Adder", url: 'https://www.geeksforgeeks.org/digital-logic/bcd-adder-in-digital-logic/' },
+          { name: 'Programmable Logic Array', url: 'https://www.geeksforgeeks.org/digital-logic/programmable-logic-array/' },
+          { name: "Read-Only Memory (ROM)", url: 'https://www.geeksforgeeks.org/digital-logic/classification-and-programming-of-read-only-memory-rom/' },
         ],
       },
       {
@@ -2868,17 +2906,26 @@ const GFG_NOTES = [
           { name: 'Logic Gates', url: 'https://www.geeksforgeeks.org/logic-gates/' },
           { name: 'Half & Full Adder', url: 'https://www.geeksforgeeks.org/half-adder-in-digital-logic/' },
           { name: 'Multiplexers & Demux', url: 'https://www.geeksforgeeks.org/multiplexers-in-digital-logic/' },
-          { name: 'Decoders & Encoders', url: 'https://www.geeksforgeeks.org/digital-logic-decoders-encoders/' },
+          { name: 'Decoders & Encoders', url: 'https://www.geeksforgeeks.org/digital-logic/encoders-and-decoders-in-digital-logic/' },
           { name: 'Comparators', url: 'https://www.geeksforgeeks.org/magnitude-comparator-in-digital-logic/' },
         ],
       },
       {
         name: 'Sequential Circuits',
         topics: [
-          { name: 'Flip-Flops', url: 'https://www.geeksforgeeks.org/flip-flop-types-their-significance-and-applications/' },
-          { name: 'Registers & Counters', url: 'https://www.geeksforgeeks.org/counters-in-digital-logic/' },
-          { name: 'Finite State Machines', url: 'https://www.geeksforgeeks.org/finite-automata-introduction/' },
-          { name: 'Mealy vs Moore Machine', url: 'https://www.geeksforgeeks.org/mealy-and-moore-machines/' },
+          { name: 'Flip-Flops', url: 'https://www.geeksforgeeks.org/digital-logic/flip-flop-types-their-conversion-and-applications/' },
+          { name: 'Registers & Counters', url: 'https://www.geeksforgeeks.org/digital-logic/counters-in-digital-logic/' },
+          { name: 'Flipflop', url: 'https://www.geeksforgeeks.org/digital-logic/sr-flip-flop/' },
+          { name: 'Ripple Counter', url: 'https://www.geeksforgeeks.org/digital-logic/ripple-counter-in-digital-logic/' },
+        ],
+      },
+      {
+        name: 'Number Representation',
+        topics: [
+          { name: 'Base Conversions for Number System', url: 'https://www.geeksforgeeks.org/digital-logic/number-system-and-base-conversions/' },
+          { name: 'Decimal to Binary Conversion', url: 'https://www.geeksforgeeks.org/dsa/program-decimal-binary-conversion/' },
+          { name: 'Floating Point Representation', url: 'https://www.geeksforgeeks.org/digital-logic/introduction-of-floating-point-representation/' },
+          { name: 'Booth’s Algorithm', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/computer-organization-booths-algorithm/' },
         ],
       },
     ],
@@ -2892,28 +2939,28 @@ const GFG_NOTES = [
       {
         name: 'Machine Instructions & Addressing',
         topics: [
-          { name: 'Instruction Set Architecture', url: 'https://www.geeksforgeeks.org/introduction-of-machine-language/' },
+          { name: 'Instruction Set Architecture', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/computer-organization-and-architecture-tutorials/#idf' },
           { name: 'Addressing Modes', url: 'https://www.geeksforgeeks.org/addressing-modes/' },
-          { name: 'Instruction Formats', url: 'https://www.geeksforgeeks.org/instruction-formats-zero-one-two-and-three-address-instruction/' },
+          { name: 'Basic Computer Instructions', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/computer-organization-basic-computer-instructions/' },
           { name: 'RISC vs CISC', url: 'https://www.geeksforgeeks.org/computer-organization-risc-and-cisc/' },
         ],
       },
       {
         name: 'CPU & ALU',
         topics: [
-          { name: 'ALU Design', url: 'https://www.geeksforgeeks.org/alu-in-computer-architecture/' },
-          { name: 'Data Path & Control Unit', url: 'https://www.geeksforgeeks.org/control-unit-and-design/' },
-          { name: 'Hardwired vs Microprogrammed', url: 'https://www.geeksforgeeks.org/hardwired-v-s-micro-programmed-control-unit/' },
+          { name: 'ALU Design', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/introduction-of-control-unit-and-its-design/' },
+          { name: 'Hardwired v/s Micro-programmed Control Unit', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/computer-organization-hardwired-vs-micro-programmed-control-unit/' },
+          { name: 'Synchronous Data Transfer', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/synchronous-data-transfer-in-computer-organization/' },
           { name: 'IEEE 754 Floating Point', url: 'https://www.geeksforgeeks.org/ieee-standard-754-floating-point-numbers/' },
         ],
       },
       {
         name: 'Pipelining',
         topics: [
-          { name: 'Pipelining Basics', url: 'https://www.geeksforgeeks.org/computer-organization-and-architecture-pipelining-set-1-execution-stages-and-throughput/' },
+          { name: 'Pipelining Basics', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/computer-organization-and-architecture-pipelining-set-1-execution-stages-and-throughput/' },
           { name: 'Pipeline Hazards', url: 'https://www.geeksforgeeks.org/computer-organization-and-architecture-pipelining-set-2-dependencies-and-data-hazard/' },
-          { name: 'Control Hazards', url: 'https://www.geeksforgeeks.org/computer-organization-and-architecture-pipelining-set-3-types-of-pipeline-stalling-and-bubbles/' },
-          { name: 'Pipeline Performance', url: 'https://www.geeksforgeeks.org/pipeline-performance/' },
+          { name: 'Different Instruction Cycles', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/different-instruction-cycles/' },
+          { name: 'PRISC and CISC', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/computer-organization-risc-and-cisc/' },
         ],
       },
       {
@@ -2929,7 +2976,7 @@ const GFG_NOTES = [
       {
         name: 'I/O Systems',
         topics: [
-          { name: 'I/O Techniques: Polling, Interrupt, DMA', url: 'https://www.geeksforgeeks.org/computer-organization-io-interface-interrupt-dma-mode/' },
+          { name: 'I/O Techniques: Polling, Interrupt, DMA', url: 'https://www.geeksforgeeks.org/computer-organization-architecture/io-interface-interrupt-dma-mode/' },
           { name: 'Secondary Storage', url: 'https://www.geeksforgeeks.org/disk-scheduling-algorithms/' },
         ],
       },
@@ -2945,9 +2992,9 @@ const GFG_NOTES = [
         name: 'C Programming',
         topics: [
           { name: 'C Basics & Data Types', url: 'https://www.geeksforgeeks.org/c-programming-language/' },
-          { name: 'Pointers', url: 'https://www.geeksforgeeks.org/pointers-in-c-and-c-plus-plus/' },
-          { name: 'Functions & Recursion', url: 'https://www.geeksforgeeks.org/recursion/' },
-          { name: 'Structs & Unions', url: 'https://www.geeksforgeeks.org/structures-c/' },
+          { name: 'Pointers', url: 'https://www.geeksforgeeks.org/c/c-pointers/' },
+          { name: 'Functions & Recursion', url: 'https://www.geeksforgeeks.org/c/c-functions/' },
+          { name: 'Structs & Unions', url: 'https://www.geeksforgeeks.org/cpp/structures-unions-and-enumerations-in-cpp/' },
           { name: 'Memory Management (malloc/free)', url: 'https://www.geeksforgeeks.org/dynamic-memory-allocation-in-c-using-malloc-calloc-free-and-realloc/' },
           { name: 'Storage Classes', url: 'https://www.geeksforgeeks.org/storage-classes-in-c/' },
         ],
@@ -2964,9 +3011,9 @@ const GFG_NOTES = [
       {
         name: 'Linked List',
         topics: [
-          { name: 'Singly Linked List', url: 'https://www.geeksforgeeks.org/singly-linked-list/' },
-          { name: 'Doubly Linked List', url: 'https://www.geeksforgeeks.org/doubly-linked-list/' },
-          { name: 'Circular Linked List', url: 'https://www.geeksforgeeks.org/circular-linked-list/' },
+          { name: 'Singly Linked List', url: 'https://www.geeksforgeeks.org/dsa/linked-list-notes-for-gate-exam/#singly-linked-list' },
+          { name: 'Doubly Linked List', url: 'https://www.geeksforgeeks.org/dsa/linked-list-notes-for-gate-exam/#doubly-linked-list' },
+          { name: 'Circular Linked List', url: 'https://www.geeksforgeeks.org/dsa/linked-list-notes-for-gate-exam/#circular-linked-list' },
         ],
       },
       {
@@ -2975,7 +3022,7 @@ const GFG_NOTES = [
           { name: 'Stack', url: 'https://www.geeksforgeeks.org/introduction-to-stack-data-structure-and-algorithm-tutorials/' },
           { name: 'Queue', url: 'https://www.geeksforgeeks.org/queue-data-structure/' },
           { name: 'Priority Queue', url: 'https://www.geeksforgeeks.org/priority-queue-set-1-introduction/' },
-          { name: 'Deque', url: 'https://www.geeksforgeeks.org/deque-in-c-stl/' },
+          { name: 'Deque', url: 'https://www.geeksforgeeks.org/dsa/queue-notes-for-gate-exam/#double-ended-queue' },
         ],
       },
       {
@@ -3018,7 +3065,7 @@ const GFG_NOTES = [
         name: 'Analysis of Algorithms',
         topics: [
           { name: 'Asymptotic Notation (Big-O, Ω, Θ)', url: 'https://www.geeksforgeeks.org/asymptotic-notation-and-analysis-based-on-input-size-of-algorithms/' },
-          { name: 'Recurrence Relations (Master Theorem)', url: 'https://www.geeksforgeeks.org/understanding-time-complexity-simple-examples/' },
+          { name: 'Time Complexity ', url: 'https://www.geeksforgeeks.org/understanding-time-complexity-simple-examples/' },
           { name: 'Space Complexity', url: 'https://www.geeksforgeeks.org/g-fact-86/' },
           { name: 'Best/Worst/Average Case Analysis', url: 'https://www.geeksforgeeks.org/worst-average-and-best-case-analysis-of-algorithms/' },
         ],
@@ -3077,7 +3124,6 @@ const GFG_NOTES = [
           { name: 'Heap Sort', url: 'https://www.geeksforgeeks.org/heap-sort/' },
           { name: 'Counting & Radix Sort', url: 'https://www.geeksforgeeks.org/counting-sort/' },
           { name: 'Lower Bound for Comparison Sort', url: 'https://www.geeksforgeeks.org/lower-bound-on-comparison-based-sorting-algorithms/' },
-          { name: 'String Matching Algorithms', url: 'https://www.geeksforgeeks.org/string-matching-algorithms/' },
         ],
       },
     ],
@@ -3101,8 +3147,7 @@ const GFG_NOTES = [
       {
         name: 'Regular Languages',
         topics: [
-          { name: 'Regular Expressions', url: 'https://www.geeksforgeeks.org/regular-expression-in-theory-of-computation/' },
-          { name: 'Regular Grammar', url: 'https://www.geeksforgeeks.org/regular-grammar-model-of-computation/' },
+          { name: 'Regular Expressions, Regular Grammar and Regular Languages ', url: 'https://www.geeksforgeeks.org/theory-of-computation/regular-expressions-regular-grammar-and-regular-languages/' },
           { name: 'Pumping Lemma for Regular', url: 'https://www.geeksforgeeks.org/pumping-lemma-in-theory-of-computation/' },
           { name: 'Closure Properties of Regular', url: 'https://www.geeksforgeeks.org/closure-properties-of-regular-languages/' },
         ],
@@ -3110,7 +3155,7 @@ const GFG_NOTES = [
       {
         name: 'Context-Free Languages',
         topics: [
-          { name: 'Context-Free Grammars', url: 'https://www.geeksforgeeks.org/context-free-grammar-introduction/' },
+          { name: 'Context-Free Grammars', url: 'https://www.geeksforgeeks.org/theory-of-computation/context-sensitive-grammar-csg-and-language-csl/' },
           { name: 'Parse Trees & Ambiguity', url: 'https://www.geeksforgeeks.org/ambiguous-grammar/' },
           { name: 'Pushdown Automata', url: 'https://www.geeksforgeeks.org/introduction-of-pushdown-automata/' },
           { name: 'Pumping Lemma for CFL', url: 'https://www.geeksforgeeks.org/theory-of-computation-pumping-lemma/' },
@@ -3121,10 +3166,10 @@ const GFG_NOTES = [
         name: 'Turing Machines & Decidability',
         topics: [
           { name: 'Turing Machine Basics', url: 'https://www.geeksforgeeks.org/turing-machine-in-toc/' },
-          { name: 'Decidable vs Undecidable', url: 'https://www.geeksforgeeks.org/decidability/' },
+          { name: 'Decidable vs Undecidable', url: 'https://www.geeksforgeeks.org/theory-of-computation/decidability-and-undecidability-in-toc/' },
           { name: "Halting Problem", url: 'https://www.geeksforgeeks.org/halting-problem-in-theory-of-computation/' },
-          { name: "Rice's Theorem", url: 'https://www.geeksforgeeks.org/rices-theorem/' },
-          { name: 'Recursively Enumerable Languages', url: 'https://www.geeksforgeeks.org/recursively-enumerable-sets-and-turing-machines/' },
+          { name: "NP-Completeness", url: 'https://www.geeksforgeeks.org/dsa/introduction-to-np-completeness/' },
+          { name: 'Turing machine for multiplication', url: 'https://www.geeksforgeeks.org/theory-of-computation/turing-machine-for-multiplication/' },
         ],
       },
     ],
@@ -3141,14 +3186,14 @@ const GFG_NOTES = [
           { name: 'Role of Lexer', url: 'https://www.geeksforgeeks.org/introduction-of-compiler-design/' },
           { name: 'Tokens, Patterns, Lexemes', url: 'https://www.geeksforgeeks.org/phases-of-a-compiler/' },
           { name: 'LEX Tool', url: 'https://www.geeksforgeeks.org/flex-fast-lexical-analyzer-generator/' },
-          { name: 'Finite Automata in Lexing', url: 'https://www.geeksforgeeks.org/regular-expressions-lex-lexical-analysis/' },
+          { name: ' Lexing', url: 'https://www.geeksforgeeks.org/compiler-design/introduction-of-lexical-analysis/' },
         ],
       },
       {
         name: 'Syntax Analysis / Parsing',
         topics: [
-          { name: 'Context-Free Grammar for Syntax', url: 'https://www.geeksforgeeks.org/context-free-grammar-introduction/' },
-          { name: 'Top-Down Parsing (Recursive Descent, LL)', url: 'https://www.geeksforgeeks.org/compiler-design-types-of-top-down-parser/' },
+          { name: 'Introduction to Syntax Analysis', url: 'https://www.geeksforgeeks.org/compiler-design/introduction-to-syntax-analysis-in-compiler-design/' },
+          { name: 'Top-Down Parsing (Recursive Descent, LL)', url: 'https://www.geeksforgeeks.org/compiler-design/what-is-top-down-parsing-with-backtracking-in-compiler-design/' },
           { name: 'FIRST and FOLLOW Sets', url: 'https://www.geeksforgeeks.org/first-set-in-syntax-analysis/' },
           { name: 'LL(1) Parsing Tables', url: 'https://www.geeksforgeeks.org/construction-of-ll1-parsing-table/' },
           { name: 'Bottom-Up Parsing (LR, SLR, LALR)', url: 'https://www.geeksforgeeks.org/bottom-up-or-shift-reduce-parsers-set-2/' },
@@ -3171,15 +3216,12 @@ const GFG_NOTES = [
           { name: 'Code Optimization Techniques', url: 'https://www.geeksforgeeks.org/code-optimization-in-compiler-design/' },
           { name: 'Loop Optimization', url: 'https://www.geeksforgeeks.org/loop-optimization-in-compiler-design/' },
           { name: 'Data Flow Analysis', url: 'https://www.geeksforgeeks.org/data-flow-analysis-compiler/' },
-          { name: 'Code Generation', url: 'https://www.geeksforgeeks.org/code-generation-in-compiler-design/' },
         ],
       },
       {
         name: 'Runtime Environments',
         topics: [
-          { name: 'Activation Records', url: 'https://www.geeksforgeeks.org/activation-record-in-compiler-design/' },
-          { name: 'Storage Allocation', url: 'https://www.geeksforgeeks.org/storage-allocation-in-compiler-design/' },
-          { name: 'Parameter Passing', url: 'https://www.geeksforgeeks.org/parameter-passing-techniques-in-compiler-design/' },
+          { name: 'Run Time Environment', url: 'https://www.geeksforgeeks.org/compiler-design/runtime-environments-in-compiler-design/' },
         ],
       },
     ],
@@ -3203,10 +3245,10 @@ const GFG_NOTES = [
         name: 'Process Management',
         topics: [
           { name: 'Process vs Thread', url: 'https://www.geeksforgeeks.org/difference-between-process-and-thread/' },
-          { name: 'Process States & PCB', url: 'https://www.geeksforgeeks.org/process-states-in-operating-systems/' },
+          { name: 'Inter Process Communication', url: 'https://www.geeksforgeeks.org/operating-systems/inter-process-communication-ipc/' },
           { name: 'CPU Scheduling Algorithms', url: 'https://www.geeksforgeeks.org/cpu-scheduling-in-operating-systems/' },
-          { name: 'FCFS, SJF, Round Robin, Priority', url: 'https://www.geeksforgeeks.org/fcfs-scheduling-algorithm/' },
-          { name: 'Multilevel Queue Scheduling', url: 'https://www.geeksforgeeks.org/multilevel-queue-mlq-cpu-scheduling/' },
+          { name: 'FCFS, SJF, Round Robin, Priority', url: 'https://www.geeksforgeeks.org/dsa/first-come-first-serve-cpu-scheduling-non-preemptive/' },
+          { name: 'Multilevel Queue Scheduling', url: 'https://www.geeksforgeeks.org/operating-systems/multilevel-queue-mlq-cpu-scheduling/' },
           { name: 'Context Switching', url: 'https://www.geeksforgeeks.org/context-switch-in-operating-system/' },
         ],
       },
@@ -3228,7 +3270,8 @@ const GFG_NOTES = [
           { name: 'Virtual Memory & Demand Paging', url: 'https://www.geeksforgeeks.org/virtual-memory-in-operating-system/' },
           { name: 'Page Replacement (FIFO, LRU, Optimal)', url: 'https://www.geeksforgeeks.org/page-replacement-algorithms-in-operating-systems/' },
           { name: 'Thrashing', url: 'https://www.geeksforgeeks.org/techniques-to-handle-thrashing/' },
-          { name: 'Contiguous Memory Allocation', url: 'https://www.geeksforgeeks.org/contiguous-memory-allocation/' },
+          { name: 'Contiguous Memory Allocation', url: 'https://www.geeksforgeeks.org/operating-systems/partition-allocation-methods-in-memory-management/' },
+          { name: 'Non Contiguous Memory Allocation', url: 'https://www.geeksforgeeks.org/operating-systems/non-contiguous-allocation-in-operating-system/' },
         ],
       },
       {
@@ -3266,7 +3309,7 @@ const GFG_NOTES = [
           { name: 'SQL Joins', url: 'https://www.geeksforgeeks.org/sql-join-set-1-inner-left-right-and-full-joins/' },
           { name: 'Nested Queries & Subqueries', url: 'https://www.geeksforgeeks.org/sql-subquery/' },
           { name: 'Aggregation & Grouping', url: 'https://www.geeksforgeeks.org/sql-group-by/' },
-          { name: 'Views & Stored Procedures', url: 'https://www.geeksforgeeks.org/views-in-sql/' },
+          { name: 'Extended Operators in Relational Algebra', url: 'https://www.geeksforgeeks.org/dbms/extended-operators-in-relational-algebra/' },
         ],
       },
       {
@@ -3274,7 +3317,7 @@ const GFG_NOTES = [
         topics: [
           { name: 'Functional Dependencies', url: 'https://www.geeksforgeeks.org/functional-dependency-and-attribute-closure/' },
           { name: '1NF, 2NF, 3NF, BCNF', url: 'https://www.geeksforgeeks.org/normal-forms-in-dbms/' },
-          { name: 'Lossless Join & Dependency Preservation', url: 'https://www.geeksforgeeks.org/decomposition-of-a-relation-in-dbms/' },
+          { name: 'Lossless Join & Dependency Preservation', url: 'https://www.geeksforgeeks.org/dbms/lossless-decomposition-in-dbms/' },
           { name: 'Armstrong\'s Axioms', url: 'https://www.geeksforgeeks.org/armstrongs-axioms-in-functional-dependency-in-dbms/' },
           { name: 'Canonical Cover', url: 'https://www.geeksforgeeks.org/canonical-cover-of-functional-dependencies-in-dbms/' },
         ],
@@ -3285,7 +3328,7 @@ const GFG_NOTES = [
           { name: 'ACID Properties', url: 'https://www.geeksforgeeks.org/acid-properties-in-dbms/' },
           { name: 'Transaction States', url: 'https://www.geeksforgeeks.org/transaction-states-in-dbms/' },
           { name: 'Serializability', url: 'https://www.geeksforgeeks.org/types-of-schedules-in-dbms/' },
-          { name: 'Locking & Two-Phase Locking', url: 'https://www.geeksforgeeks.org/two-phase-locking-protocols-concurrency-control/' },
+          { name: 'Conflict Serializability', url: 'https://www.geeksforgeeks.org/dbms/conflict-serializability-in-dbms/' },
           { name: 'Deadlock in Transactions', url: 'https://www.geeksforgeeks.org/deadlock-in-dbms/' },
           { name: 'Recovery Techniques', url: 'https://www.geeksforgeeks.org/database-recovery-techniques-in-dbms/' },
         ],
@@ -3294,7 +3337,8 @@ const GFG_NOTES = [
         name: 'Indexing & File Organization',
         topics: [
           { name: 'Indexing (Dense/Sparse)', url: 'https://www.geeksforgeeks.org/indexing-in-databases-set-1/' },
-          { name: 'B-Trees & B+ Trees for Indexing', url: 'https://www.geeksforgeeks.org/introduction-of-b-plus-tree/' },
+          { name: 'B-Trees  Indexing', url: 'https://www.geeksforgeeks.org/dsa/introduction-of-b-tree-2/' },
+          { name: ' B+ Trees  Indexing', url: 'https://www.geeksforgeeks.org/dbms/introduction-of-b-tree/' },
           { name: 'Hashing for Databases', url: 'https://www.geeksforgeeks.org/hashing-in-dbms/' },
         ],
       },
@@ -3322,18 +3366,17 @@ const GFG_NOTES = [
           { name: 'Error Detection & Correction', url: 'https://www.geeksforgeeks.org/error-detection-in-computer-networks/' },
           { name: 'CRC', url: 'https://www.geeksforgeeks.org/cyclic-redundancy-check-python/' },
           { name: 'Stop & Wait, Go-Back-N, Selective Repeat', url: 'https://www.geeksforgeeks.org/stop-and-wait-arq/' },
-          { name: 'CSMA/CD & CSMA/CA', url: 'https://www.geeksforgeeks.org/difference-between-csma-cd-and-csma-ca/' },
+          { name: 'CSMA/CD & CSMA/CA', url: 'https://www.geeksforgeeks.org/computer-networks/carrier-sense-multiple-access-csma/' },
           { name: 'Ethernet & 802.11 (WiFi)', url: 'https://www.geeksforgeeks.org/ethernet-frame-format/' },
         ],
       },
       {
         name: 'Network Layer',
         topics: [
-          { name: 'IPv4 Addressing & Subnetting', url: 'https://www.geeksforgeeks.org/introduction-classful-ip-addressing/' },
+          { name: 'IPv4 Addressing & Subnetting', url: 'https://www.geeksforgeeks.org/computer-networks/introduction-of-classful-ip-addressing/' },
           { name: 'CIDR & VLSM', url: 'https://www.geeksforgeeks.org/classless-inter-domain-routing-cidr/' },
-          { name: 'Routing Algorithms (Dijkstra, Bellman-Ford)', url: 'https://www.geeksforgeeks.org/computer-network-routing-algorithms/' },
           { name: 'RIP, OSPF, BGP', url: 'https://www.geeksforgeeks.org/computer-network-routing-information-protocol-rip/' },
-          { name: 'IP Fragmentation', url: 'https://www.geeksforgeeks.org/fragmentation-in-computer-networks/' },
+          { name: 'IP Fragmentation', url: 'https://www.geeksforgeeks.org/computer-networks/fragmentation-network-layer/' },
           { name: 'ICMP, ARP, RARP', url: 'https://www.geeksforgeeks.org/internet-control-message-protocol-icmp/' },
         ],
       },
@@ -3343,7 +3386,7 @@ const GFG_NOTES = [
           { name: 'TCP vs UDP', url: 'https://www.geeksforgeeks.org/differences-between-tcp-and-udp/' },
           { name: 'TCP 3-Way Handshake', url: 'https://www.geeksforgeeks.org/tcp-3-way-handshake-process/' },
           { name: 'TCP Congestion Control', url: 'https://www.geeksforgeeks.org/tcp-congestion-control/' },
-          { name: 'Flow Control (Sliding Window)', url: 'https://www.geeksforgeeks.org/sliding-window-protocol/' },
+          { name: 'Error Control in TCP', url: 'https://www.geeksforgeeks.org/computer-networks/error-control-in-tcp/' },
           { name: 'Socket Programming', url: 'https://www.geeksforgeeks.org/socket-programming-cc/' },
         ],
       },
@@ -3352,7 +3395,7 @@ const GFG_NOTES = [
         topics: [
           { name: 'DNS', url: 'https://www.geeksforgeeks.org/domain-name-system-dns-in-application-layer/' },
           { name: 'HTTP & HTTPS', url: 'https://www.geeksforgeeks.org/http-full-form/' },
-          { name: 'FTP, SMTP, POP3', url: 'https://www.geeksforgeeks.org/ftp-file-transfer-protocol/' },
+          { name: 'FTP, SMTP, POP3', url: 'https://www.geeksforgeeks.org/computer-networks/file-transfer-protocol-ftp-in-application-layer/' },
           { name: 'DHCP', url: 'https://www.geeksforgeeks.org/dynamic-host-configuration-protocol-dhcp/' },
         ],
       },
@@ -3367,41 +3410,38 @@ const GFG_NOTES = [
       {
         name: 'Verbal Aptitude',
         topics: [
-          { name: 'Reading Comprehension', url: 'https://www.geeksforgeeks.org/reading-comprehension-gate-exam/' },
-          { name: 'Verbal Analogies', url: 'https://www.geeksforgeeks.org/analogy-verbal-reasoning/' },
-          { name: 'Critical Reasoning', url: 'https://www.geeksforgeeks.org/critical-reasoning/' },
-          { name: 'Sentence Completion', url: 'https://www.geeksforgeeks.org/sentence-completion/' },
+          { name: 'Reading Comprehension', url: 'https://www.geeksforgeeks.org/english/reading-comprehension-questions/' },
+          { name: 'Selecting Words', url: 'https://www.geeksforgeeks.org/aptitude/selecting-words/' },
+          { name: 'Idioms and Phrases', url: 'https://www.geeksforgeeks.org/english/30-most-common-idioms-and-phrases/' },
           { name: 'Word Groups & Grammar', url: 'https://www.geeksforgeeks.org/english-grammar/' },
         ],
       },
       {
         name: 'Quantitative Aptitude',
         topics: [
-          { name: 'Number Series', url: 'https://www.geeksforgeeks.org/number-series-questions-and-answers/' },
+          { name: 'Data Interpretation', url: 'https://www.geeksforgeeks.org/data-visualization/bar-graph-meaning-types-and-examples/' },
           { name: 'Ratio & Proportions', url: 'https://www.geeksforgeeks.org/ratio-and-proportion-aptitude-questions/' },
-          { name: 'Time, Speed, Distance', url: 'https://www.geeksforgeeks.org/time-speed-and-distance/' },
+          { name: 'Powers', url: 'https://www.geeksforgeeks.org/dsa/power-in-mathematics/' },
           { name: 'Profit & Loss', url: 'https://www.geeksforgeeks.org/profit-and-loss/' },
           { name: 'Percentages', url: 'https://www.geeksforgeeks.org/percentage/' },
-          { name: 'Work & Time Problems', url: 'https://www.geeksforgeeks.org/work-time-problems/' },
+          { name: 'Elementary Statistics and Probability', url: 'https://www.geeksforgeeks.org/aptitude/probability-questions/' },
         ],
       },
       {
         name: 'Logical Reasoning',
         topics: [
           { name: 'Puzzles', url: 'https://www.geeksforgeeks.org/puzzles/' },
-          { name: 'Seating Arrangement', url: 'https://www.geeksforgeeks.org/seating-arrangement-logical-reasoning/' },
-          { name: 'Blood Relations', url: 'https://www.geeksforgeeks.org/blood-relation-questions-and-answers/' },
+          { name: 'Statement and Conclusions', url: 'https://www.geeksforgeeks.org/aptitude/statement-and-conclusion-analytical-and-logical-reasoning/' },
+          { name: 'BStatement and Assumptions', url: 'https://www.geeksforgeeks.org/aptitude/statement-and-assumption/' },
           { name: 'Coding-Decoding', url: 'https://www.geeksforgeeks.org/coding-decoding/' },
-          { name: 'Syllogisms', url: 'https://www.geeksforgeeks.org/syllogisms-in-logical-reasoning/' },
-          { name: 'Direction Sense', url: 'https://www.geeksforgeeks.org/direction-sense-questions-and-answers/' },
-        ],
+          { name: 'Syllogisms', url: 'https://www.geeksforgeeks.org/aptitude/syllogism/' },        ],
       },
       {
-        name: 'Data Interpretation',
+        name: 'Spatial Aptitude',
         topics: [
-          { name: 'Bar Graph, Pie Chart, Line Graph', url: 'https://www.geeksforgeeks.org/data-interpretation/' },
-          { name: 'Tables & Caselets', url: 'https://www.geeksforgeeks.org/data-interpretation-tables/' },
-          { name: 'Venn Diagrams', url: 'https://www.geeksforgeeks.org/venn-diagrams/' },
+          { name: 'Translation', url: 'https://www.geeksforgeeks.org/aptitude/translation-of-shapes/' },
+          { name: 'Mirroring', url: 'https://www.geeksforgeeks.org/ssc-banking/concept-of-mirror-image-non-verbal-reasoning/' },
+          { name: 'Paper Folding', url: 'https://www.geeksforgeeks.org/ssc-banking/non-verbal-reasoning-paper-folding/' },
         ],
       },
     ],
@@ -3557,84 +3597,127 @@ function GFGNotesSection() {
 const REVISION_SHEETS = [
   {
     subject: 'Engineering Mathematics',
-    file: '/revision-sheets/engg-math.pdf',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112487770/EM-SHORT-NOTES-.pdf',
     icon: '∑',
     color: '#7C3AED',
     bg: 'linear-gradient(135deg,#7C3AED,#A78BFA)',
     topics: ['Mathematical Logic', 'Set Theory & Algebra', 'Combinatorics', 'Probability', 'Linear Algebra', 'Calculus', 'Graph Theory'],
-    pages: '4 pages',
+    pages: 'Short Notes',
   },
   {
-    subject: 'Digital Logic',
-    file: '/revision-sheets/digital-logic.pdf',
-    icon: '⊕',
-    color: '#B45309',
-    bg: 'linear-gradient(135deg,#92400E,#D97706)',
-    topics: ['Number Systems & Codes', 'Boolean Algebra', 'Combinational Circuits', 'Sequential Circuits & FSM'],
-    pages: '3 pages',
+    subject: 'General Aptitude',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112469891/GENERAL-APTITUDE-DA-SHORT-NOTES-_compressed.pdf',
+    icon: '🎯',
+    color: '#DC2626',
+    bg: 'linear-gradient(135deg,#DC2626,#F87171)',
+    topics: ['Numerical Ability', 'Verbal Ability', 'Data Interpretation', 'Logical Reasoning'],
+    pages: 'Short Notes',
   },
   {
-    subject: 'Computer Organization & Architecture',
-    file: '/revision-sheets/coa.pdf',
-    icon: 'CO',
-    color: '#0369A1',
-    bg: 'linear-gradient(135deg,#0369A1,#38BDF8)',
-    topics: ['ISA & Addressing Modes', 'Pipelining & Hazards', 'Cache & Virtual Memory', 'IEEE 754 & I/O'],
-    pages: '4 pages',
-  },
-  {
-    subject: 'Data Structures & Algorithms',
-    file: '/revision-sheets/ds-algo.pdf',
+    subject: 'Data Structures',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112501792/DATA-STRUCTURE-SHORT-NOTES_compressed.pdf',
     icon: '{}',
     color: '#065F46',
     bg: 'linear-gradient(135deg,#065F46,#34D399)',
-    topics: ['Sorting Algorithms Table', 'BST, AVL, Heap, B-Tree', 'Graph Algorithms', 'Dynamic Programming'],
-    pages: '4 pages',
+    topics: ['Arrays & Linked Lists', 'Stacks & Queues', 'Trees — BST, AVL, B-Tree', 'Heaps & Hashing', 'Graphs'],
+    pages: 'Short Notes',
+  },
+  {
+    subject: 'Algorithms',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112529761/ALGORTIHM-SHORT-NOTES-_compressed.pdf',
+    icon: '⚡',
+    color: '#0F766E',
+    bg: 'linear-gradient(135deg,#0F766E,#2DD4BF)',
+    topics: ['Sorting Algorithms', 'Greedy & Divide-Conquer', 'Dynamic Programming', 'Graph Algorithms'],
+    pages: 'Short Notes',
   },
   {
     subject: 'Theory of Computation',
-    file: '/revision-sheets/toc.pdf',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20250806171405492570/TOC-SHORT-NOTES_compressed.pdf',
     icon: 'δ',
     color: '#166534',
     bg: 'linear-gradient(135deg,#166534,#4ADE80)',
     topics: ['Chomsky Hierarchy', 'DFA / NFA / Minimization', 'Regular & CFL Languages', 'Turing Machines & Decidability'],
-    pages: '4 pages',
+    pages: 'Short Notes',
   },
   {
-    subject: 'Compiler Design',
-    file: '/revision-sheets/compiler.pdf',
-    icon: '⚙',
-    color: '#374151',
-    bg: 'linear-gradient(135deg,#374151,#6B7280)',
-    topics: ['6 Compilation Phases', 'LL(1) & LR Parsing', 'SDT & Symbol Table', 'Code Optimization'],
-    pages: '3 pages',
-  },
-  {
-    subject: 'Operating Systems',
-    file: '/revision-sheets/os.pdf',
-    icon: 'OS',
-    color: '#0E7490',
-    bg: 'linear-gradient(135deg,#0E7490,#67E8F9)',
-    topics: ['CPU Scheduling Table', 'Synchronization & Deadlock', 'Paging & Page Replacement', 'File Systems & Disk Scheduling'],
-    pages: '4 pages',
-  },
-  {
-    subject: 'Database Management Systems',
-    file: '/revision-sheets/dbms.pdf',
+    subject: 'DBMS',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20250806165401103214/DBMS-SHORT-NOTES_compressed.pdf',
     icon: 'DB',
     color: '#1D4ED8',
     bg: 'linear-gradient(135deg,#1D4ED8,#60A5FA)',
     topics: ['Normalization (1NF–4NF)', 'SQL & Relational Algebra', 'ACID & Transactions', 'Indexing & B+ Trees'],
-    pages: '4 pages',
+    pages: 'Short Notes',
   },
   {
     subject: 'Computer Networks',
-    file: '/revision-sheets/networks.pdf',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112509132/Computer-Network--_compressed.pdf',
     icon: '⇄',
     color: '#0F766E',
-    bg: 'linear-gradient(135deg,#0F766E,#2DD4BF)',
-    topics: ['OSI & TCP/IP Table', 'IP Addressing & Subnetting', 'TCP vs UDP Table', 'Error & Flow Control'],
-    pages: '4 pages',
+    bg: 'linear-gradient(135deg,#0F766E,#5EEAD4)',
+    topics: ['OSI & TCP/IP Model', 'IP Addressing & Subnetting', 'TCP vs UDP', 'Error & Flow Control'],
+    pages: 'Short Notes',
+  },
+  {
+    subject: 'Operating Systems',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112463046/Operating-System-.pdf',
+    icon: 'OS',
+    color: '#0E7490',
+    bg: 'linear-gradient(135deg,#0E7490,#67E8F9)',
+    topics: ['CPU Scheduling', 'Synchronization & Deadlock', 'Paging & Page Replacement', 'File Systems & Disk Scheduling'],
+    pages: 'Short Notes',
+  },
+  {
+    subject: 'Digital Logic & Design',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251126180646177643/DIGITAL-LOGIC-COMBINE-SHORT-NOTE.pdf',
+    icon: '⊕',
+    color: '#B45309',
+    bg: 'linear-gradient(135deg,#92400E,#D97706)',
+    topics: ['Number Systems & Codes', 'Boolean Algebra', 'Combinational Circuits', 'Sequential Circuits & FSM'],
+    pages: 'Short Notes',
+  },
+  {
+    subject: 'Computer Organization & Architecture',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006151446572894/COA-SHORT-NOTES-_compressed_compressed.pdf',
+    icon: 'CO',
+    color: '#0369A1',
+    bg: 'linear-gradient(135deg,#0369A1,#38BDF8)',
+    topics: ['ISA & Addressing Modes', 'Pipelining & Hazards', 'Cache & Virtual Memory', 'IEEE 754 & I/O'],
+    pages: 'Short Notes',
+  },
+  {
+    subject: 'Compiler Design',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112515643/CD_ShortNotes2025-_compressed.pdf',
+    icon: '⚙',
+    color: '#374151',
+    bg: 'linear-gradient(135deg,#374151,#6B7280)',
+    topics: ['6 Compilation Phases', 'LL(1) & LR Parsing', 'SDT & Symbol Table', 'Code Optimization'],
+    pages: 'Short Notes',
+  },
+  {
+    subject: 'C Programming',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112523545/C-PROGRAMMING_SHORT_NOTES-_compressed-.pdf',
+    icon: 'C',
+    color: '#4338CA',
+    bg: 'linear-gradient(135deg,#4338CA,#818CF8)',
+    topics: ['Pointers & Memory', 'Arrays & Strings', 'Structures & Unions', 'File I/O & Preprocessor'],
+    pages: 'Short Notes',
+  },
+  {
+    subject: 'Discrete Mathematics',
+    file: 'https://media.geeksforgeeks.org/wp-content/uploads/20251006150112476506/Discrete-Maths_compressed.pdf',
+    icon: '∀',
+    color: '#9333EA',
+    bg: 'linear-gradient(135deg,#9333EA,#C084FC)',
+    topics: ['Mathematical Logic', 'Sets & Relations', 'Graph Theory', 'Combinatorics & Recurrences'],
+    pages: 'Short Notes',
+
+
+
+
+
+
+
   },
 ]
 
@@ -3648,9 +3731,9 @@ function QuickRevisionSheets() {
           <div className="flex items-center gap-2">
             <h2 className="font-serif-display text-2xl font-bold text-[#1A1A1A]">Quick Revision Sheets</h2>
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700">PDF</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700">9 Subjects</span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700">13 Subjects</span>
           </div>
-          <p className="text-sm text-slate-500 mt-0.5">Concise A4 PDFs covering complete GATE CS/IT syllabus — download and print for last-minute revision.</p>
+          <p className="text-sm text-slate-500 mt-0.5">Concise short notes covering complete GATE CS/IT syllabus — open and read for last-minute revision.</p>
         </div>
       </div>
 
@@ -3688,28 +3771,17 @@ function QuickRevisionSheets() {
                 ))}
               </div>
 
-              {/* Action buttons */}
-              <div className="flex gap-2 mt-auto">
+              {/* Action button — View only */}
+              <div className="mt-auto">
                 <a
                   href={sheet.file}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 hover:shadow-md"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 hover:shadow-md"
                   style={{ background: sheet.bg }}
                 >
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                  Preview
-                </a>
-                <a
-                  href={sheet.file}
-                  download
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold border-2 transition-all hover:shadow-md"
-                  style={{ borderColor: sheet.color, color: sheet.color }}
-                  onMouseEnter={e => { e.currentTarget.style.background = sheet.color; e.currentTarget.style.color = '#fff'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = ''; e.currentTarget.style.color = sheet.color; }}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                  Download
+                  View PDF
                 </a>
               </div>
             </div>
@@ -3717,11 +3789,11 @@ function QuickRevisionSheets() {
         ))}
       </div>
 
-      {/* Download all hint */}
+      {/* Tip */}
       <div className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-amber-50 border border-amber-100">
         <span className="text-lg">💡</span>
         <span className="text-xs text-amber-800 font-medium">
-          Tip: Download all PDFs, print them double-sided on A4 and keep them for last-minute revision before GATE!
+          Tip: Go through these short notes regularly for last-minute revision before GATE!
         </span>
       </div>
     </section>
