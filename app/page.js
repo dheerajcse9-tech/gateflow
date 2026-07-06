@@ -1658,7 +1658,7 @@ function DashboardPage({ user, activeBranch, snapshot, setPage }) {
 
     // Read mock attempts count
     try {
-      const records = JSON.parse(localStorage.getItem('gateflow_mock_history') || '[]')
+      const records = JSON.parse(localStorage.getItem(`gateflow_${user.id}_mock_history`) || '[]')
       setHistoryCount(records.length)
     } catch { }
   }, [user.id, activeBranch.branchCode])
@@ -1666,7 +1666,7 @@ function DashboardPage({ user, activeBranch, snapshot, setPage }) {
   // Load plan from localStorage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('gateflow_todays_plan')
+      const stored = localStorage.getItem(`gateflow_${user.id}_todays_plan`)
       if (stored) {
         setPlanItems(JSON.parse(stored))
       } else {
@@ -1677,19 +1677,19 @@ function DashboardPage({ user, activeBranch, snapshot, setPage }) {
           { id: 4, text: '30 mins revision', checked: false }
         ]
         setPlanItems(defaultPlan)
-        localStorage.setItem('gateflow_todays_plan', JSON.stringify(defaultPlan))
+        localStorage.setItem(`gateflow_${user.id}_todays_plan`, JSON.stringify(defaultPlan))
       }
     } catch { }
-  }, [])
+  }, [user.id])
 
   // Calculate live counts and recent activities
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setNotesCount(parseInt(localStorage.getItem('gateflow_notes_opened_count') || '0'))
-      setYtCount(parseInt(localStorage.getItem('gateflow_yt_watched_count') || '0'))
+      setNotesCount(parseInt(localStorage.getItem(`gateflow_${user.id}_notes_opened_count`) || '0'))
+      setYtCount(parseInt(localStorage.getItem(`gateflow_${user.id}_yt_watched_count`) || '0'))
 
       try {
-        const localLogs = JSON.parse(localStorage.getItem('gateflow_activity_log') || '[]')
+        const localLogs = JSON.parse(localStorage.getItem(`gateflow_${user.id}_activity_log`) || '[]')
         if (localLogs.length > 0) {
           const formatted = localLogs.map(log => {
             let bg = 'bg-slate-50 text-slate-600'
@@ -1742,7 +1742,7 @@ function DashboardPage({ user, activeBranch, snapshot, setPage }) {
         }
       } catch { }
     }
-  }, [weekSessions])
+  }, [weekSessions, user.id])
 
   // Dynamic greeting based on hours
   const greeting = useMemo(() => {
@@ -1811,7 +1811,7 @@ function DashboardPage({ user, activeBranch, snapshot, setPage }) {
   const handleSavePlan = () => {
     if (editingPlanItems.length === 0) return toast.error('Please add at least one topic to the list')
     setPlanItems(editingPlanItems)
-    localStorage.setItem('gateflow_todays_plan', JSON.stringify(editingPlanItems))
+    localStorage.setItem(`gateflow_${user.id}_todays_plan`, JSON.stringify(editingPlanItems))
     setIsEditPlanOpen(false)
     toast.success("Today's Plan updated successfully!")
   }
@@ -2088,7 +2088,7 @@ function DashboardPage({ user, activeBranch, snapshot, setPage }) {
                       onChange={() => {
                         const updated = planItems.map(p => p.id === item.id ? { ...p, checked: !p.checked } : p)
                         setPlanItems(updated)
-                        localStorage.setItem('gateflow_todays_plan', JSON.stringify(updated))
+                        localStorage.setItem(`gateflow_${user.id}_todays_plan`, JSON.stringify(updated))
                       }}
                       className="w-4.5 h-4.5 text-[#FF7A18] focus:ring-[#FF7A18] rounded border-slate-300"
                     />
@@ -4501,7 +4501,9 @@ function calculateGateMetrics(marks) {
   return { rank, score }
 }
 
-function MockExamSession({ paper, onEnd }) {
+function MockExamSession({ user, paper, onEnd }) {
+  const userId = user?.id || (typeof window !== 'undefined' ? localStorage.getItem('gp_user_id') : '')
+  const historyKey = userId ? `gateflow_${userId}_mock_history` : 'gateflow_mock_history'
   const totalSecs = paper.duration * 60
   const [timeLeft, setTimeLeft] = useState(totalSecs)
   const [phase, setPhase] = useState('exam') // 'exam' | 'result'
@@ -4595,9 +4597,9 @@ function MockExamSession({ paper, onEnd }) {
     }
 
     try {
-      const history = JSON.parse(localStorage.getItem('gateflow_mock_history') || '[]')
+      const history = JSON.parse(localStorage.getItem(historyKey) || '[]')
       history.unshift(record)
-      localStorage.setItem('gateflow_mock_history', JSON.stringify(history))
+      localStorage.setItem(historyKey, JSON.stringify(history))
 
       if (typeof window !== 'undefined' && window.trackGateFlowAction) {
         window.trackGateFlowAction('mock', `Attempted: ${paper.name || 'GATE Exam'}`, 'page:Mock Tests')
@@ -4613,7 +4615,7 @@ function MockExamSession({ paper, onEnd }) {
   const pct = ((totalSecs - timeLeft) / totalSecs) * 100
   const urgent = timeLeft < 600
 
-  const latestHistory = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('gateflow_mock_history') || '[]')[0] : null
+  const latestHistory = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem(historyKey) || '[]')[0] : null
   const stats = phase === 'result' && latestHistory ? latestHistory : { score: 0, correct: 0, wrong: 0, skipped: 65, rank: 15000, gateScore: 320 }
 
   if (phase === 'result') {
@@ -4922,16 +4924,17 @@ function MockExamSession({ paper, onEnd }) {
   )
 }
 
-function MockTestsPage({ activeBranch, onStartExam }) {
+function MockTestsPage({ user, activeBranch, onStartExam }) {
   const [confirmPaper, setConfirmPaper] = useState(null)
   const [history, setHistory] = useState([])
 
   useEffect(() => {
     try {
-      const records = JSON.parse(localStorage.getItem('gateflow_mock_history') || '[]')
+      const userId = user?.id || (typeof window !== 'undefined' ? localStorage.getItem('gp_user_id') : '')
+      const records = JSON.parse(localStorage.getItem(userId ? `gateflow_${userId}_mock_history` : 'gateflow_mock_history') || '[]')
       setHistory(records)
     } catch { }
-  }, [])
+  }, [user?.id])
 
   const grouped = {}
   MOCK_PAPERS.forEach(p => {
@@ -5101,11 +5104,9 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
   }
 
   // Profile data states
-  const [profileName, setProfileName] = useState(user?.username || 'dheerajmandulaacs_375')
-  const [profileEmail, setProfileEmail] = useState('dheerajmandulaacs_375@gmail.com')
+  const [profileName, setProfileName] = useState(user?.username || '')
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
   const [editName, setEditName] = useState(profileName)
-  const [editEmail, setEditEmail] = useState(profileEmail)
 
   // Preferences states
   const [prefBranch, setPrefBranch] = useState('Computer Science')
@@ -5135,49 +5136,46 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
 
   // Load from localStorage on client-side mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedEmail = localStorage.getItem('gateflow_email')
-      if (storedEmail) {
-        setProfileEmail(storedEmail)
-        setEditEmail(storedEmail)
-      }
-      const storedBranch = localStorage.getItem('gateflow_pref_branch')
-      if (storedBranch) setPrefBranch(storedBranch)
+    if (typeof window !== 'undefined' && user?.id) {
+      setProfileName(user.username || '')
+      setEditName(user.username || '')
+      const storedBranch = localStorage.getItem(`gateflow_${user.id}_pref_branch`)
+      setPrefBranch(storedBranch || 'Computer Science')
       
-      const storedDiff = localStorage.getItem('gateflow_pref_difficulty')
-      if (storedDiff) setPrefDifficulty(storedDiff)
+      const storedDiff = localStorage.getItem(`gateflow_${user.id}_pref_difficulty`)
+      setPrefDifficulty(storedDiff || 'Advanced')
       
-      const storedReminder = localStorage.getItem('gateflow_pref_reminder')
-      if (storedReminder) setPrefReminder(storedReminder)
+      const storedReminder = localStorage.getItem(`gateflow_${user.id}_pref_reminder`)
+      setPrefReminder(storedReminder || '07:00 AM')
       
-      const storedRank = localStorage.getItem('gateflow_goal_rank')
-      if (storedRank) setGoalRank(storedRank)
+      const storedRank = localStorage.getItem(`gateflow_${user.id}_goal_rank`)
+      setGoalRank(storedRank || 'AIR Under 100')
       
-      const storedTime = localStorage.getItem('gateflow_goal_time')
-      if (storedTime) setGoalStudyTime(storedTime)
+      const storedTime = localStorage.getItem(`gateflow_${user.id}_goal_time`)
+      setGoalStudyTime(storedTime || '8 hours')
       
-      const storedTopics = localStorage.getItem('gateflow_goal_topics')
-      if (storedTopics) setGoalTopics(storedTopics)
+      const storedTopics = localStorage.getItem(`gateflow_${user.id}_goal_topics`)
+      setGoalTopics(storedTopics || '3 topics')
       
-      const storedDate = localStorage.getItem('gateflow_goal_date')
-      if (storedDate) setGoalDate(storedDate)
+      const storedDate = localStorage.getItem(`gateflow_${user.id}_goal_date`)
+      setGoalDate(storedDate || 'Feb 6, 2027')
       
-      const stored2fa = localStorage.getItem('gateflow_2fa')
-      if (stored2fa) setTwoFactor(stored2fa === 'true')
+      const stored2fa = localStorage.getItem(`gateflow_${user.id}_2fa`)
+      setTwoFactor(stored2fa === 'true')
       
-      const storedRem = localStorage.getItem('gateflow_notif_reminders')
-      if (storedRem) setRemindersEnabled(storedRem !== 'false')
+      const storedRem = localStorage.getItem(`gateflow_${user.id}_notif_reminders`)
+      setRemindersEnabled(storedRem !== 'false')
       
-      const storedSum = localStorage.getItem('gateflow_notif_summary')
-      if (storedSum) setSummaryEnabled(storedSum !== 'false')
+      const storedSum = localStorage.getItem(`gateflow_${user.id}_notif_summary`)
+      setSummaryEnabled(storedSum !== 'false')
       
-      const storedWk = localStorage.getItem('gateflow_notif_weekly')
-      if (storedWk) setWeeklyEnabled(storedWk === 'true')
+      const storedWk = localStorage.getItem(`gateflow_${user.id}_notif_weekly`)
+      setWeeklyEnabled(storedWk === 'true')
       
-      const storedUp = localStorage.getItem('gateflow_notif_updates')
-      if (storedUp) setUpdatesEnabled(storedUp !== 'false')
+      const storedUp = localStorage.getItem(`gateflow_${user.id}_notif_updates`)
+      setUpdatesEnabled(storedUp !== 'false')
     }
-  }, [])
+  }, [user])
 
   // Dialog open triggers
   const [isBranchOpen, setIsBranchOpen] = useState(false)
@@ -5194,8 +5192,6 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
   // Profile Save
   const saveProfile = () => {
     setProfileName(editName)
-    setProfileEmail(editEmail)
-    localStorage.setItem('gateflow_email', editEmail)
     if (user) user.username = editName
     setIsEditProfileOpen(false)
     toast.success('Profile details updated!')
@@ -5203,19 +5199,19 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
 
   // Preferences Save
   const savePreferences = () => {
-    localStorage.setItem('gateflow_pref_branch', prefBranch)
-    localStorage.setItem('gateflow_pref_difficulty', prefDifficulty)
-    localStorage.setItem('gateflow_pref_reminder', prefReminder)
+    localStorage.setItem(`gateflow_${user.id}_pref_branch`, prefBranch)
+    localStorage.setItem(`gateflow_${user.id}_pref_difficulty`, prefDifficulty)
+    localStorage.setItem(`gateflow_${user.id}_pref_reminder`, prefReminder)
     setIsManagePreferencesOpen(false)
     toast.success('Study preferences saved!')
   }
 
   // Goals Save
   const saveGoals = () => {
-    localStorage.setItem('gateflow_goal_rank', goalRank)
-    localStorage.setItem('gateflow_goal_time', goalStudyTime)
-    localStorage.setItem('gateflow_goal_topics', goalTopics)
-    localStorage.setItem('gateflow_goal_date', goalDate)
+    localStorage.setItem(`gateflow_${user.id}_goal_rank`, goalRank)
+    localStorage.setItem(`gateflow_${user.id}_goal_time`, goalStudyTime)
+    localStorage.setItem(`gateflow_${user.id}_goal_topics`, goalTopics)
+    localStorage.setItem(`gateflow_${user.id}_goal_date`, goalDate)
     setIsUpdateGoalsOpen(false)
     toast.success('Study goals updated successfully!')
   }
@@ -5235,18 +5231,18 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
     setUpdatesEnabled(true)
     setTwoFactor(false)
 
-    localStorage.removeItem('gateflow_pref_branch')
-    localStorage.removeItem('gateflow_pref_difficulty')
-    localStorage.removeItem('gateflow_pref_reminder')
-    localStorage.removeItem('gateflow_goal_rank')
-    localStorage.removeItem('gateflow_goal_time')
-    localStorage.removeItem('gateflow_goal_topics')
-    localStorage.removeItem('gateflow_goal_date')
-    localStorage.setItem('gateflow_notif_reminders', 'true')
-    localStorage.setItem('gateflow_notif_summary', 'true')
-    localStorage.setItem('gateflow_notif_weekly', 'false')
-    localStorage.setItem('gateflow_notif_updates', 'true')
-    localStorage.setItem('gateflow_2fa', 'false')
+    localStorage.removeItem(`gateflow_${user.id}_pref_branch`)
+    localStorage.removeItem(`gateflow_${user.id}_pref_difficulty`)
+    localStorage.removeItem(`gateflow_${user.id}_pref_reminder`)
+    localStorage.removeItem(`gateflow_${user.id}_goal_rank`)
+    localStorage.removeItem(`gateflow_${user.id}_goal_time`)
+    localStorage.removeItem(`gateflow_${user.id}_goal_topics`)
+    localStorage.removeItem(`gateflow_${user.id}_goal_date`)
+    localStorage.setItem(`gateflow_${user.id}_notif_reminders`, 'true')
+    localStorage.setItem(`gateflow_${user.id}_notif_summary`, 'true')
+    localStorage.setItem(`gateflow_${user.id}_notif_weekly`, 'false')
+    localStorage.setItem(`gateflow_${user.id}_notif_updates`, 'true')
+    localStorage.setItem(`gateflow_${user.id}_2fa`, 'false')
 
     toast.success('Settings reset to defaults!')
   }
@@ -5257,11 +5253,11 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
       const data = {
         user,
         activeBranch,
-        todaysPlan: JSON.parse(localStorage.getItem('gateflow_todays_plan') || '[]'),
-        mockHistory: JSON.parse(localStorage.getItem('gateflow_mock_history') || '[]'),
-        notesCount: localStorage.getItem('gateflow_notes_opened_count'),
-        ytCount: localStorage.getItem('gateflow_yt_watched_count'),
-        activityLog: JSON.parse(localStorage.getItem('gateflow_activity_log') || '[]')
+        todaysPlan: JSON.parse(localStorage.getItem(`gateflow_${user.id}_todays_plan`) || '[]'),
+        mockHistory: JSON.parse(localStorage.getItem(`gateflow_${user.id}_mock_history`) || '[]'),
+        notesCount: localStorage.getItem(`gateflow_${user.id}_notes_opened_count`),
+        ytCount: localStorage.getItem(`gateflow_${user.id}_yt_watched_count`),
+        activityLog: JSON.parse(localStorage.getItem(`gateflow_${user.id}_activity_log`) || '[]')
       }
       const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2))
       const downloadAnchor = document.createElement('a')
@@ -5279,7 +5275,19 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
   // Clear caches
   const clearCache = () => {
     if (confirm('Are you sure you want to clear your local cache? This will reset your active mock exams, plan status, and local statistics.')) {
-      localStorage.clear()
+      if (user?.id) {
+        const prefix = `gateflow_${user.id}_`
+        const keysToRemove = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i)
+          if (key && (key.startsWith(prefix) || key === 'gp_user_id')) {
+            keysToRemove.push(key)
+          }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k))
+      } else {
+        localStorage.clear()
+      }
       window.location.reload()
     }
   }
@@ -5374,7 +5382,7 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-[#1A1A1A]">{profileName}</h3>
-                  <p className="text-xs text-slate-500 mt-0.5">{profileEmail}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{user?.email || 'No email'}</p>
                   <p className="text-[10px] text-slate-400 mt-1">Member since Feb 6, 2024</p>
                 </div>
               </div>
@@ -5401,7 +5409,7 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
                   </div>
                   <div className="space-y-1">
                     <Label className="font-bold text-slate-700">Email Address</Label>
-                    <Input value={editEmail} onChange={e => setEditEmail(e.target.value)} className="h-10" type="email" />
+                    <Input value={user?.email || ''} disabled className="h-10 bg-slate-50 text-slate-500 cursor-not-allowed" type="email" />
                   </div>
                 </div>
                 <DialogFooter>
@@ -5674,7 +5682,7 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
                       checked={item.state}
                       onCheckedChange={(val) => {
                         item.set(val)
-                        localStorage.setItem(`gateflow_notif_${item.label.toLowerCase().split(' ')[0]}`, String(val))
+                        localStorage.setItem(`gateflow_${user.id}_notif_${item.label.toLowerCase().split(' ')[0]}`, String(val))
                         toast.success(`${item.label} ${val ? 'enabled' : 'disabled'}`)
                       }}
                     />
@@ -5707,7 +5715,7 @@ function SettingsPage({ user, activeBranch, onSwitchBranch, onAddBranch, onLogou
                 onClick={() => {
                   const val = !twoFactor
                   setTwoFactor(val)
-                  localStorage.setItem('gateflow_2fa', String(val))
+                  localStorage.setItem(`gateflow_${user.id}_2fa`, String(val))
                   toast.success(`Two-Factor Authentication turned ${val ? 'ON' : 'OFF'}`)
                 }}
                 className="flex items-center justify-between py-3.5 cursor-pointer hover:bg-slate-50 px-2 -mx-2 rounded-xl transition"
@@ -6180,15 +6188,18 @@ function App() {
     if (typeof window !== 'undefined') {
       window.trackGateFlowAction = (type, label, url) => {
         try {
+          const userId = localStorage.getItem('gp_user_id')
+          if (!userId) return
+
           if (type === 'yt') {
-            const count = parseInt(localStorage.getItem('gateflow_yt_watched_count') || '0') + 1
-            localStorage.setItem('gateflow_yt_watched_count', String(count))
+            const count = parseInt(localStorage.getItem(`gateflow_${userId}_yt_watched_count`) || '0') + 1
+            localStorage.setItem(`gateflow_${userId}_yt_watched_count`, String(count))
           } else if (type === 'note') {
-            const count = parseInt(localStorage.getItem('gateflow_notes_opened_count') || '0') + 1
-            localStorage.setItem('gateflow_notes_opened_count', String(count))
+            const count = parseInt(localStorage.getItem(`gateflow_${userId}_notes_opened_count`) || '0') + 1
+            localStorage.setItem(`gateflow_${userId}_notes_opened_count`, String(count))
           }
 
-          const logs = JSON.parse(localStorage.getItem('gateflow_activity_log') || '[]')
+          const logs = JSON.parse(localStorage.getItem(`gateflow_${userId}_activity_log`) || '[]')
           const newLog = {
             type,
             title: type === 'yt' ? `Watched: ${label.slice(0, 35)}...` : `Note Opened: ${label.slice(0, 35)}...`,
@@ -6197,7 +6208,7 @@ function App() {
             url: url || '#'
           }
           logs.unshift(newLog)
-          localStorage.setItem('gateflow_activity_log', JSON.stringify(logs.slice(0, 40)))
+          localStorage.setItem(`gateflow_${userId}_activity_log`, JSON.stringify(logs.slice(0, 40)))
         } catch (e) {
           console.error(e)
         }
@@ -6258,7 +6269,7 @@ function App() {
     return (
       <>
         <Toaster richColors position="top-right" />
-        <MockExamSession paper={activeExam} onEnd={() => setActiveExam(null)} />
+        <MockExamSession user={user} paper={activeExam} onEnd={() => setActiveExam(null)} />
       </>
     )
   }
@@ -6277,7 +6288,7 @@ function App() {
         {page === 'Dashboard' && <DashboardPage user={user} activeBranch={activeBranch} snapshot={snapshot} heatmap={heatmap} setPage={setPage} />}
         {page === 'Resources' && <ResourcesPage activeBranch={activeBranch} isAdmin={isAdmin} />}
         {page === 'PYQs' && <PYQsPage activeBranch={activeBranch} />}
-        {page === 'Mock Tests' && <MockTestsPage activeBranch={activeBranch} onStartExam={setActiveExam} />}
+        {page === 'Mock Tests' && <MockTestsPage user={user} activeBranch={activeBranch} onStartExam={setActiveExam} />}
         {page === 'Settings' && <SettingsPage user={user} activeBranch={activeBranch} onSwitchBranch={switchBranch} onAddBranch={addBranch} onLogout={logout} />}
       </main>
 
