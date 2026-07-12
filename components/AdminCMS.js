@@ -19,6 +19,10 @@ export function getAdminToken() {
   return sessionStorage.getItem(ADMIN_KEY)
 }
 
+export function clearAdminToken() {
+  if (typeof window !== 'undefined') sessionStorage.removeItem(ADMIN_KEY)
+}
+
 export const adminApi = {
   login: async (email, password) => {
     const r = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) })
@@ -33,6 +37,17 @@ export const adminApi = {
     const t = getAdminToken(); if (!t) return { error: 'no token' }
     const url = id ? `/api/admin/cms/${collection}/${id}` : `/api/admin/cms/${collection}`
     const r = await fetch(url, { method, headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' }, body: body ? JSON.stringify(body) : undefined })
+    return r.json()
+  },
+  // Generic authenticated admin request for non-CMS endpoints
+  // (announcements, quotes, users, analytics, password).
+  req: async (path, method = 'GET', body) => {
+    const t = getAdminToken(); if (!t) return { error: 'no token' }
+    const r = await fetch(`/api/admin/${path}`, {
+      method,
+      headers: { Authorization: `Bearer ${t}`, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    })
     return r.json()
   },
   upload: async (file, folder = 'gateplus/general') => {
@@ -83,7 +98,7 @@ export function AdminLoginForm({ onAuth, onCancel }) {
         <Button type="submit" disabled={busy} className="btn-sunrise flex-1 h-11 rounded-xl">{busy ? '...' : 'Enter Admin Mode'}</Button>
         {onCancel && <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>}
       </div>
-      <p className="text-xs text-[#6B5E52]">Default: admin@gateplus.local / admin123</p>
+      <p className="text-xs text-[#6B5E52]">Authorized administrators only.</p>
     </form>
   )
 }
@@ -343,4 +358,253 @@ export function useCmsList(collection, params = '') {
     fetch(`/api/cms/${collection}${params}`).then((r) => r.json()).then((d) => { setItems(d.items || []); setLoading(false) })
   }, [collection, params, v])
   return { items, loading, reload: () => setV((x) => x + 1) }
+}
+
+// =================== SUPPLEMENTARY SCHEMAS (announcements / quotes) ===================
+const EXTRA_SCHEMAS = {
+  announcements: {
+    title: 'Announcement',
+    endpoint: 'announcements',
+    fields: [
+      { name: 'title', type: 'text', label: 'Title' },
+      { name: 'body', type: 'textarea', label: 'Body' },
+      { name: 'tone', type: 'select', label: 'Tone', options: [
+        { value: 'info', label: 'Info' }, { value: 'success', label: 'Success' },
+        { value: 'warn', label: 'Warning' }, { value: 'critical', label: 'Critical' },
+      ] },
+      { name: 'pinned', type: 'switch', label: 'Pinned' },
+      { name: 'active', type: 'switch', label: 'Active' },
+    ],
+    listKey: 'announcements',
+  },
+  quotes: {
+    title: 'Quote',
+    endpoint: 'quotes',
+    fields: [
+      { name: 'text', type: 'textarea', label: 'Quote text' },
+      { name: 'author', type: 'text', label: 'Author' },
+      { name: 'featured', type: 'switch', label: 'Featured' },
+      { name: 'active', type: 'switch', label: 'Active' },
+    ],
+    listKey: 'quotes',
+  },
+}
+
+// =================== GENERIC CMS COLLECTION MANAGER ===================
+function CollectionManager({ collKey, schema, folder }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+
+  const load = async () => {
+    setLoading(true)
+    const r = await adminApi.cms(collKey, 'GET')
+    setItems(r.items || [])
+    setLoading(false)
+  }
+  useEffect(() => { load() }, [collKey])
+
+  const save = async (form) => {
+    const r = editing ? await adminApi.cms(collKey, 'PATCH', form, editing.id) : await adminApi.cms(collKey, 'POST', form)
+    if (r.error) { toast.error(r.error); throw new Error(r.error) }
+    toast.success(editing ? 'Updated' : 'Created')
+    await load()
+  }
+  const del = async (id) => {
+    const r = await adminApi.cms(collKey, 'DELETE', null, id)
+    if (r.error) toast.error(r.error); else { toast.success('Deleted'); await load() }
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-bold text-[#1A1A1A]">{schema.title}s <span className="text-xs text-slate-400">({items.length})</span></h3>
+        <AdminAddBtn onClick={() => { setEditing(null); setOpen(true) }} label={`Add ${schema.title}`} />
+      </div>
+      {loading ? <div className="text-sm text-slate-400 py-6">Loading…</div> : (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {items.map((it) => (
+            <Card key={it.id} className="p-3 relative group">
+              <div className="font-semibold text-sm text-[#1A1A1A] pr-14 truncate">{it.title || it.text || it.id}</div>
+              <div className="text-xs text-slate-500 mt-1 truncate">{it.author || it.subject || it.branchCode || ''}</div>
+              <AdminItemControls onEdit={() => { setEditing(it); setOpen(true) }} onDelete={() => del(it.id)} />
+            </Card>
+          ))}
+          {items.length === 0 && <div className="col-span-full text-sm text-slate-400 py-6 text-center">No items yet.</div>}
+        </div>
+      )}
+      <CmsModal
+        open={open}
+        onClose={() => setOpen(false)}
+        title={editing ? `Edit ${schema.title}` : `New ${schema.title}`}
+        schema={schema.fields}
+        initial={editing || {}}
+        onSave={save}
+        folder={folder}
+      />
+    </div>
+  )
+}
+
+// Manager for announcements/quotes which use dedicated endpoints.
+function ExtraManager({ conf }) {
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [editing, setEditing] = useState(null)
+
+  const load = async () => {
+    setLoading(true)
+    const r = await adminApi.req(conf.endpoint, 'GET')
+    setItems(r[conf.listKey] || [])
+    setLoading(false)
+  }
+  useEffect(() => { load() }, [conf.endpoint])
+
+  const save = async (form) => {
+    const payload = { ...form }
+    const r = editing
+      ? await adminApi.req(`${conf.endpoint}/${editing.id}`, 'PATCH', payload)
+      : await adminApi.req(conf.endpoint, 'POST', payload)
+    if (r.error) { toast.error(r.error); throw new Error(r.error) }
+    toast.success(editing ? 'Updated' : 'Created')
+    await load()
+  }
+  const del = async (id) => {
+    const r = await adminApi.req(`${conf.endpoint}/${id}`, 'DELETE')
+    if (r.error) toast.error(r.error); else { toast.success('Deleted'); await load() }
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-bold text-[#1A1A1A]">{conf.title}s <span className="text-xs text-slate-400">({items.length})</span></h3>
+        <AdminAddBtn onClick={() => { setEditing(null); setOpen(true) }} label={`Add ${conf.title}`} />
+      </div>
+      {loading ? <div className="text-sm text-slate-400 py-6">Loading…</div> : (
+        <div className="space-y-2">
+          {items.map((it) => (
+            <Card key={it.id} className="p-3 relative group">
+              <div className="font-semibold text-sm text-[#1A1A1A] pr-14">{it.title || it.text}</div>
+              {it.body && <div className="text-xs text-slate-500 mt-1">{it.body}</div>}
+              {it.author && <div className="text-xs text-slate-500 mt-1">— {it.author}</div>}
+              <AdminItemControls onEdit={() => { setEditing(it); setOpen(true) }} onDelete={() => del(it.id)} />
+            </Card>
+          ))}
+          {items.length === 0 && <div className="text-sm text-slate-400 py-6 text-center">No items yet.</div>}
+        </div>
+      )}
+      <CmsModal open={open} onClose={() => setOpen(false)} title={editing ? `Edit ${conf.title}` : `New ${conf.title}`} schema={conf.fields} initial={editing || {}} onSave={save} />
+    </div>
+  )
+}
+
+// =================== USERS PANEL ===================
+function UsersPanel() {
+  const [q, setQ] = useState('')
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(false)
+  const load = async (query = '') => {
+    setLoading(true)
+    const r = await adminApi.req(`users?q=${encodeURIComponent(query)}`, 'GET')
+    setUsers(r.users || [])
+    setLoading(false)
+  }
+  useEffect(() => { load() }, [])
+  const toggleSuspend = async (u) => {
+    const r = await adminApi.req(`users/${u.id}/suspend`, 'POST', { suspended: !u.suspended })
+    if (r.error) toast.error(r.error); else { toast.success(u.suspended ? 'Reactivated' : 'Suspended'); load(q) }
+  }
+  return (
+    <div>
+      <form onSubmit={(e) => { e.preventDefault(); load(q) }} className="flex gap-2 mb-3">
+        <Input placeholder="Search email or username" value={q} onChange={(e) => setQ(e.target.value)} />
+        <Button type="submit" className="btn-sunrise">Search</Button>
+      </form>
+      {loading ? <div className="text-sm text-slate-400 py-6">Loading…</div> : (
+        <div className="space-y-2">
+          {users.map((u) => (
+            <Card key={u.id} className="p-3 flex items-center justify-between">
+              <div className="min-w-0">
+                <div className="font-semibold text-sm truncate">{u.username}</div>
+                <div className="text-xs text-slate-500 truncate">{u.email}</div>
+              </div>
+              <Button variant={u.suspended ? 'outline' : 'destructive'} size="sm" onClick={() => toggleSuspend(u)}>
+                {u.suspended ? 'Reactivate' : 'Suspend'}
+              </Button>
+            </Card>
+          ))}
+          {users.length === 0 && <div className="text-sm text-slate-400 py-6 text-center">No users found.</div>}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// =================== ADMIN DASHBOARD (root reachable at /admin) ===================
+const CONTENT_TABS = Object.keys(SCHEMAS)
+export function AdminDashboard() {
+  const [admin, setAdmin] = useState(null)
+  const [ready, setReady] = useState(false)
+  const [tab, setTab] = useState('books')
+
+  useEffect(() => {
+    let alive = true
+    if (getAdminToken()) {
+      adminApi.me().then((r) => { if (alive) { if (r.admin) setAdmin(r.admin); setReady(true) } }).catch(() => alive && setReady(true))
+    } else setReady(true)
+    return () => { alive = false }
+  }, [])
+
+  const logout = () => { clearAdminToken(); setAdmin(null); toast.success('Signed out of admin') }
+
+  if (!ready) return <div className="min-h-screen flex items-center justify-center text-slate-400">Loading…</div>
+
+  if (!admin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5] p-4">
+        <Card className="w-full max-w-sm p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Shield className="w-5 h-5 text-[#FF7A18]" />
+            <span className="font-bold text-[#1A1A1A]">GateFlow Admin</span>
+          </div>
+          <AdminLoginForm onAuth={setAdmin} />
+          <a href="/" className="block text-center text-xs text-slate-400 mt-4 hover:text-slate-600">← Back to app</a>
+        </Card>
+      </div>
+    )
+  }
+
+  const allTabs = [...CONTENT_TABS, 'announcements', 'quotes', 'users']
+  return (
+    <div className="min-h-screen bg-[#FAF8F5]">
+      <header className="bg-white border-b sticky top-0 z-20">
+        <div className="container mx-auto px-4 h-14 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-[#FF7A18]" />
+            <span className="font-bold">Admin</span>
+            <span className="text-xs text-slate-400 hidden sm:inline">{admin.email}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <a href="/" className="text-xs text-slate-500 hover:text-slate-800">View app</a>
+            <button onClick={logout} className="text-slate-500 hover:text-red-500" title="Sign out"><LogOut className="w-4 h-4" /></button>
+          </div>
+        </div>
+      </header>
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex gap-1 overflow-x-auto pb-3 mb-4 border-b">
+          {allTabs.map((t) => (
+            <button key={t} onClick={() => setTab(t)} className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition ${tab === t ? 'sunrise-gradient text-white' : 'text-slate-600 hover:bg-slate-100'}`}>
+              {(SCHEMAS[t]?.title || EXTRA_SCHEMAS[t]?.title || 'Users')}{tab === t ? '' : ''}
+            </button>
+          ))}
+        </div>
+        {CONTENT_TABS.includes(tab) && <CollectionManager collKey={tab} schema={SCHEMAS[tab]} folder={SCHEMAS[tab].folder} />}
+        {tab === 'announcements' && <ExtraManager conf={EXTRA_SCHEMAS.announcements} />}
+        {tab === 'quotes' && <ExtraManager conf={EXTRA_SCHEMAS.quotes} />}
+        {tab === 'users' && <UsersPanel />}
+      </div>
+    </div>
+  )
 }

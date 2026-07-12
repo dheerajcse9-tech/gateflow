@@ -38,26 +38,43 @@ const BRANCHES = [
 ]
 const TARGET_DATES = { 2026: '2026-02-07', 2027: '2027-02-06', 2028: '2028-02-05' }
 
+// ---- Auth token helpers ----
+const TOKEN_KEY = 'gp_token'
+function getToken() {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem(TOKEN_KEY)
+}
+export function setToken(t) {
+  if (typeof window === 'undefined') return
+  if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY)
+}
+// Every request carries the Bearer token; identity is enforced server-side.
+function authHeaders(extra = {}) {
+  const t = getToken()
+  return { ...(t ? { Authorization: `Bearer ${t}` } : {}), ...extra }
+}
+const jsonHeaders = () => authHeaders({ 'Content-Type': 'application/json' })
+
 const api = {
   signup: (d) => fetch('/api/auth/signup', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
   login: (d) => fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  me: (id) => fetch(`/api/user/me?userId=${id}`).then((r) => r.json()),
+  me: () => fetch(`/api/user/me`, { headers: authHeaders() }).then((r) => r.json()),
   topics: (branch = 'CS') => fetch(`/api/topics?branch=${branch}`).then((r) => r.json()),
-  complete: (d) => fetch('/api/topics/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  uncomplete: (d) => fetch('/api/topics/complete', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  revise: (d) => fetch('/api/topics/revise', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  logSession: (d) => fetch('/api/sessions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  snapshot: (id, branch) => fetch(`/api/stats/snapshot?userId=${id}&branch=${branch}`).then((r) => r.json()),
-  heatmap: (id) => fetch(`/api/stats/heatmap?userId=${id}`).then((r) => r.json()),
+  complete: (d) => fetch('/api/topics/complete', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
+  uncomplete: (d) => fetch('/api/topics/complete', { method: 'DELETE', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
+  revise: (d) => fetch('/api/topics/revise', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
+  logSession: (d) => fetch('/api/sessions', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
+  snapshot: (id, branch) => fetch(`/api/stats/snapshot?branch=${branch}`, { headers: authHeaders() }).then((r) => r.json()),
+  heatmap: (id) => fetch(`/api/stats/heatmap`, { headers: authHeaders() }).then((r) => r.json()),
   users: () => fetch('/api/stats/users').then((r) => r.json()),
-  roi: (id, branch) => fetch(`/api/stats/roi?userId=${id}&branch=${branch}`).then((r) => r.json()),
+  roi: (id, branch) => fetch(`/api/stats/roi?branch=${branch}`, { headers: authHeaders() }).then((r) => r.json()),
   activity: () => fetch('/api/activity/recent').then((r) => r.json()),
   leaderboard: (branch) => fetch(`/api/community/leaderboard?branch=${branch}`).then((r) => r.json()),
   posts: () => fetch('/api/community/posts').then((r) => r.json()),
-  newPost: (d) => fetch('/api/community/posts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  goal: (d) => fetch('/api/user/goal', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  switchBranch: (d) => fetch('/api/user/branch/switch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
-  addBranch: (d) => fetch('/api/user/branch/add', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(d) }).then((r) => r.json()),
+  newPost: (d) => fetch('/api/community/posts', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
+  goal: (d) => fetch('/api/user/goal', { method: 'PATCH', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
+  switchBranch: (d) => fetch('/api/user/branch/switch', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
+  addBranch: (d) => fetch('/api/user/branch/add', { method: 'POST', headers: jsonHeaders(), body: JSON.stringify(d) }).then((r) => r.json()),
 }
 
 // =================== AUTH SCREEN ===================
@@ -76,6 +93,7 @@ function AuthScreen({ onAuth }) {
       if (res.error) {
         toast.error(res.error)
       } else {
+        setToken(res.token)
         toast.success(`Welcome back, ${res.user.username}!`)
         onAuth(res.user)
       }
@@ -88,7 +106,8 @@ function AuthScreen({ onAuth }) {
   useEffect(() => {
     const initGoogle = () => {
       if (window.google) {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '148149511115-kgdjutjp7dprqq1cvqlec5l5r45vat2r.apps.googleusercontent.com'
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
+        if (!clientId) { console.error('NEXT_PUBLIC_GOOGLE_CLIENT_ID is not configured'); return }
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: handleGoogleCredentialResponse,
@@ -340,7 +359,7 @@ function AnnouncementBanner() {
             <div className="font-bold">{a.title}</div>
             {a.body && <div className="text-sm opacity-95 mt-0.5">{a.body}</div>}
           </div>
-          <button onClick={() => { const d = { ...dismissed, [a.id]: 1 }; setDismissed(d); sessionStorage.setItem('gp_dismissed_ann', JSON.stringify(d)) }} className="text-white/90 hover:text-white text-xl leading-none px-2">×</button>
+          <button aria-label="Dismiss announcement" onClick={() => { const d = { ...dismissed, [a.id]: 1 }; setDismissed(d); sessionStorage.setItem('gp_dismissed_ann', JSON.stringify(d)) }} className="text-white/90 hover:text-white text-xl leading-none px-2">×</button>
         </div>
       ))}
     </div>
@@ -400,12 +419,12 @@ function TopBar({ user, activeBranch }) {
 // =================== ACTIVITY TICKER ===================
 function ActivityTicker() {
   const [events, setEvents] = useState([])
-  const [stats, setStats] = useState({ total: 1317 })
+  const [stats, setStats] = useState({ total: 0 })
   useEffect(() => {
     const load = async () => {
       const r = await api.activity().catch(() => ({ events: [] }))
       setEvents(r.events || [])
-      const s = await api.users().catch(() => ({ total: 1317 }))
+      const s = await api.users().catch(() => ({ total: 0 }))
       setStats(s)
     }
     load()
@@ -414,12 +433,8 @@ function ActivityTicker() {
   }, [])
   const items = []
   events.forEach((e) => items.push({ type: 'evt', data: e }))
-  items.push({ type: 'stat', data: stats })
-  if (items.length < 5) {
-    items.push({ type: 'evt', data: { username: 'ayushmodi.cse27_105', branchCode: 'cs', action: 'completed', subject: 'Computer Networks', topic: 'Sliding window — Go-Back-N', xpEarned: 20 } })
-    items.push({ type: 'evt', data: { username: 'DavidRaj', branchCode: 'cs', action: 'revised', subject: 'Discrete Math', topic: 'Sets & relations', xpEarned: 20 } })
-    items.push({ type: 'evt', data: { username: 'priya_ecewallah', branchCode: 'ece', action: 'completed', subject: 'Signals', topic: 'Convolution', xpEarned: 20 } })
-  }
+  if (stats.total > 0) items.push({ type: 'stat', data: stats })
+  if (items.length === 0) return null
   const seq = [...items, ...items]
   return (
     <div className="w-full overflow-hidden border-y" style={{ background: '#2A2A2A', borderColor: '#1E3250' }}>
@@ -438,7 +453,7 @@ function ActivityTicker() {
             ) : (
               <>
                 <GraduationCap className="w-3 h-3" style={{ color: '#FF7A18' }} />
-                <span>{(it.data.total || 1317).toLocaleString()} GATE aspirants are preparing on GateFlow across CS, DA, EC, EE, ME &amp; CE</span>
+                <span>{(it.data.total || 0).toLocaleString()} GATE aspirants are preparing on GateFlow across CS, DA, EC, EE, ME &amp; CE</span>
                 <span className="text-slate-600">|</span>
               </>
             )}
@@ -561,10 +576,10 @@ function NavBar({ user, page, setPage, activeBranch, onSwitchBranch, onLogout, o
               <div className="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-[#FFF8EE] text-[#FF7A18] border border-[#FFE5D0]">
                 <Flame className="w-3 h-3" />{activeBranch?.streak || 0}d
               </div>
-              <button onClick={() => setPage('Settings')} className="w-9 h-9 rounded-full sunrise-gradient flex items-center justify-center text-xs font-bold text-white shadow-md">
+              <button aria-label="Open settings" onClick={() => setPage('Settings')} className="w-9 h-9 rounded-full sunrise-gradient flex items-center justify-center text-xs font-bold text-white shadow-md">
                 {user.username[0].toUpperCase()}
               </button>
-              <button onClick={onLogout} className="hidden md:flex w-9 h-9 rounded-full hover:bg-[#FFE5D0]/60 items-center justify-center text-[#2A2A2A]" title="Sign out"><LogOut className="w-4 h-4" /></button>
+              <button aria-label="Sign out" onClick={onLogout} className="hidden md:flex w-9 h-9 rounded-full hover:bg-[#FFE5D0]/60 items-center justify-center text-[#2A2A2A]" title="Sign out"><LogOut className="w-4 h-4" /></button>
             </div>
           </div>
         </div>
@@ -2427,7 +2442,7 @@ function CommunityPage({ user, activeBranch }) {
                 <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Your stats</div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between"><span className="text-slate-500">Streak</span><b>{activeBranch.streak || 0}d</b></div>
-                  <div className="flex justify-between"><span className="text-slate-500">Streak</span><b>{activeBranch.streak || 0}d</b></div>
+                  <div className="flex justify-between"><span className="text-slate-500">XP</span><b>{activeBranch.xp || 0}</b></div>
                   <div className="flex justify-between"><span className="text-slate-500">Topics done</span><b>{(activeBranch.completedTopics || []).length}</b></div>
                 </div>
               </Card>
@@ -2436,7 +2451,7 @@ function CommunityPage({ user, activeBranch }) {
                 {board.slice(0, 5).map((u, i) => (
                   <div key={u.username} className="flex items-center justify-between text-sm py-1">
                     <span className={u.username === user.username ? 'font-bold text-[#1A1A1A]' : 'text-slate-700'}>#{i + 1} {u.username}</span>
-                    <span className="text-slate-500">{u.completedTopics?.length || 0} topics</span>
+                    <span className="text-slate-500">{u.completed || 0} topics</span>
                   </div>
                 ))}
               </Card>
@@ -6218,7 +6233,7 @@ function App() {
 
   const refresh = async () => {
     if (!user) return
-    const u = await api.me(user.id)
+    const u = await api.me()
     if (u.user) setUser(u.user)
     if (activeBranch) {
       const snap = await api.snapshot(user.id, activeBranch.branchCode)
@@ -6229,13 +6244,19 @@ function App() {
   }
 
   useEffect(() => {
-    const id = typeof window !== 'undefined' ? localStorage.getItem('gp_user_id') : null
-    if (id) {
-      api.me(id).then((r) => { if (r.user) setUser(r.user); setLoaded(true) }).catch(() => setLoaded(true))
+    // Restore the session from the stored bearer token (identity is verified
+    // server-side). If the token is missing/expired the API returns 401 and we
+    // fall back to the auth screen.
+    const token = typeof window !== 'undefined' ? localStorage.getItem('gp_token') : null
+    if (token) {
+      api.me().then((r) => {
+        if (r.user) { setUser(r.user); localStorage.setItem('gp_user_id', r.user.id) }
+        else { setToken(null); localStorage.removeItem('gp_user_id') }
+        setLoaded(true)
+      }).catch(() => setLoaded(true))
     } else {
       setLoaded(true)
     }
-
   }, [])
 
   useEffect(() => {
@@ -6249,7 +6270,7 @@ function App() {
     localStorage.setItem('gp_user_id', u.id)
     setUser(u)
   }
-  const logout = () => { localStorage.removeItem('gp_user_id'); setUser(null) }
+  const logout = () => { setToken(null); localStorage.removeItem('gp_user_id'); setUser(null) }
 
   const switchBranch = async (code) => { await api.switchBranch({ userId: user.id, branchCode: code }); await refresh() }
   const addBranch = async (code, year) => { await api.addBranch({ userId: user.id, branchCode: code, targetYear: year }); await refresh() }

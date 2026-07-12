@@ -84,6 +84,8 @@ node_modules/@next/swc-linux-arm64-musl/next-swc.linux-arm64-musl.node
 .env
 .env.*
 *.env
+!.env.example
 credentials.json
 *.key
 .credentials
+node_modules/@next/swc-darwin-arm64/next-swc.darwin-arm64.node
